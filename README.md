@@ -54,13 +54,36 @@ npm run dev
 
 ### Использование Docker
 
+**Production (все сервисы):**
 ```bash
-# Запуск всех сервисов
+# Создать .env файл из примера (если нужно)
+cp .env.example .env
+
+# Запуск всех сервисов (PostgreSQL + Backend + Frontend)
 docker-compose up -d
+
+# Просмотр логов
+docker-compose logs -f
 
 # Остановка
 docker-compose down
+
+# Остановка с удалением volumes (ОСТОРОЖНО: удалит данные БД)
+docker-compose down -v
 ```
+
+**Development (только PostgreSQL):**
+```bash
+# Запуск только PostgreSQL для разработки
+docker-compose -f docker-compose.dev.yml up -d
+
+# Backend и Frontend запускаются локально через npm
+```
+
+**Доступные сервисы:**
+- Backend: http://localhost:3000
+- Frontend: http://localhost:3001
+- PostgreSQL: localhost:5432
 
 ## Структура проекта
 
