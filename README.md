@@ -55,6 +55,7 @@ npm run dev
 ### Использование Docker
 
 **Production (все сервисы):**
+
 ```bash
 # Создать .env файл из примера (если нужно)
 cp .env.example .env
@@ -73,17 +74,24 @@ docker-compose down -v
 ```
 
 **Development (только PostgreSQL):**
+
 ```bash
+# Установить переменную окружения для пароля БД
+export POSTGRES_PASSWORD=your-secure-password
+
 # Запуск только PostgreSQL для разработки
 docker-compose -f docker-compose.dev.yml up -d
 
 # Backend и Frontend запускаются локально через npm
 ```
 
+**Важно:** Для `docker-compose.dev.yml` необходимо задать переменную окружения `POSTGRES_PASSWORD` (без дефолтного значения в целях безопасности).
+
 **Доступные сервисы:**
+
 - Backend: http://localhost:3000
 - Frontend: http://localhost:3001
-- PostgreSQL: localhost:5432
+- PostgreSQL (dev): localhost:5434
 
 ## Структура проекта
 
