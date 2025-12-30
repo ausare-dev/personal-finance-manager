@@ -35,6 +35,7 @@ COPY --from=builder /app/tsconfig.json ./
 # Expose port
 EXPOSE 3001
 
-# Start application
+# Start application on port 3001
+ENV PORT=3001
 CMD ["npm", "run", "start"]
 
