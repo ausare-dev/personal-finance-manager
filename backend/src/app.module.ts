@@ -20,6 +20,7 @@ import { WalletsModule } from './wallets/wallets.module';
 import { TransactionsModule } from './transactions/transactions.module';
 import { BudgetsModule } from './budgets/budgets.module';
 import { GoalsModule } from './goals/goals.module';
+import { CurrenciesModule } from './currencies/currencies.module';
 
 @Module({
   imports: [
@@ -50,6 +51,7 @@ import { GoalsModule } from './goals/goals.module';
     TransactionsModule,
     BudgetsModule,
     GoalsModule,
+    CurrenciesModule,
   ],
   controllers: [AppController],
   providers: [
