@@ -23,6 +23,7 @@ import { GoalsModule } from './goals/goals.module';
 import { CurrenciesModule } from './currencies/currencies.module';
 import { InvestmentsModule } from './investments/investments.module';
 import { AnalyticsModule } from './analytics/analytics.module';
+import { ImportExportModule } from './import-export/import-export.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
     CurrenciesModule,
     InvestmentsModule,
     AnalyticsModule,
+    ImportExportModule,
   ],
   controllers: [AppController],
   providers: [
