@@ -60,5 +60,9 @@ export class WalletsService {
     const wallet = await this.findOne(id, userId);
     await this.walletRepository.remove(wallet);
   }
+
+  async updateBalance(walletId: string, newBalance: number): Promise<void> {
+    await this.walletRepository.update(walletId, { balance: newBalance });
+  }
 }
 
