@@ -9,6 +9,7 @@ import {
   Goal,
   Investment,
   CurrencyRate,
+  Article,
 } from './src/entities/index';
 
 config({ path: path.resolve(__dirname, '.env') });
@@ -20,7 +21,7 @@ export default new DataSource({
   username: process.env.DATABASE_USER || 'postgres',
   password: process.env.DATABASE_PASSWORD || 'postgres',
   database: process.env.DATABASE_NAME || 'pfm_db',
-  entities: [User, Wallet, Transaction, Budget, Goal, Investment, CurrencyRate],
+  entities: [User, Wallet, Transaction, Budget, Goal, Investment, CurrencyRate, Article],
   migrations: ['src/migrations/*.ts'],
   migrationsTableName: 'typeorm_migrations',
   synchronize: false,
