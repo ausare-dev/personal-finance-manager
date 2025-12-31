@@ -29,6 +29,8 @@ import {
         password: configService.get<string>('DATABASE_PASSWORD', 'postgres'),
         database: configService.get<string>('DATABASE_NAME', 'pfm_db'),
         entities: [User, Wallet, Transaction, Budget, Goal, Investment, CurrencyRate],
+        migrations: ['dist/migrations/*.js'],
+        migrationsRun: configService.get<string>('NODE_ENV') === 'production',
         synchronize: configService.get<string>('NODE_ENV') !== 'production',
         logging: configService.get<string>('NODE_ENV') === 'development',
       }),
