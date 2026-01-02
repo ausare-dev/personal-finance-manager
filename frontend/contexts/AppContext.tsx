@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { App as AntdApp } from 'antd';
 
 interface AppContextType {
   // Состояние загрузки для глобальных операций
@@ -11,7 +12,7 @@ interface AppContextType {
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
 
-  // Уведомления (можно расширить позже)
+  // Уведомления
   showNotification: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
@@ -20,6 +21,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [theme, setThemeState] = useState<'light' | 'dark'>('light');
+  const { message } = AntdApp.useApp();
 
   // Загружаем тему из localStorage при инициализации
   React.useEffect(() => {
@@ -50,18 +52,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsLoading(loading);
   };
 
-  // Показать уведомление (базовая реализация, можно расширить с Ant Design notification)
+  // Показать уведомление через Ant Design message
   const showNotification = (
-    message: string,
+    messageText: string,
     type: 'success' | 'error' | 'info' | 'warning' = 'info'
   ) => {
-    // TODO: Интегрировать с Ant Design notification
-    console.log(`[${type.toUpperCase()}] ${message}`);
-    
-    // Временная реализация через console, позже можно добавить Ant Design notification
-    if (typeof window !== 'undefined') {
-      // Можно использовать Ant Design message или notification
-      // message[type](message);
+    if (typeof window !== 'undefined' && message) {
+      message[type](messageText);
     }
   };
 

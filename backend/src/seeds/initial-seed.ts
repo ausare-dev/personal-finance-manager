@@ -27,10 +27,10 @@ export async function seedDatabase(dataSource: DataSource): Promise<void> {
 
   // Create test user
   // Note: In production, password should be hashed with bcrypt
-  // For testing purposes, using plain text (will be hashed when auth module is implemented)
+  // For testing/development purposes, using plain text password (hashed by UserService in production)
   const user = userRepository.create({
     email: 'test@example.com',
-    password: 'password123', // TODO: Hash with bcrypt when auth module is ready
+    password: 'password123', // Plain text for seeding (will be hashed by UserService.create() in production)
   });
   await userRepository.save(user);
 
