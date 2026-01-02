@@ -1,13 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe, Logger } from '@nestjs/common';
-import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  
+
   const app = await NestFactory.create(AppModule, {
     logger: ['error', 'warn', 'log', 'debug', 'verbose'],
   });
@@ -39,13 +38,7 @@ async function bootstrap() {
     }),
   );
 
-  // Winston logger (if configured)
-  try {
-    const winstonLogger = app.get(WINSTON_MODULE_NEST_PROVIDER);
-    app.useLogger(winstonLogger);
-  } catch (error) {
-    // Winston not configured, using default logger
-  }
+  // Logger is configured by default in NestJS
 
   // Swagger documentation
   const config = new DocumentBuilder()
@@ -85,6 +78,8 @@ async function bootstrap() {
   await app.listen(port);
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`CORS enabled for: ${frontendUrl}`);
-  logger.log(`Swagger documentation available at: http://localhost:${port}/api`);
+  logger.log(
+    `Swagger documentation available at: http://localhost:${port}/api`,
+  );
 }
 bootstrap();
