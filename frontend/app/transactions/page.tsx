@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MainLayout from '@/components/MainLayout';
 import {
@@ -48,7 +48,7 @@ import type {
 } from '@/types';
 import { format } from 'date-fns';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
@@ -118,10 +118,6 @@ export default function TransactionsPage() {
 		loadWallets();
 	}, []);
 
-	useEffect(() => {
-		loadTransactions();
-	}, [filters]);
-
 	const loadWallets = async () => {
 		try {
 			const data = await walletsService.getAll();
@@ -131,21 +127,113 @@ export default function TransactionsPage() {
 		}
 	};
 
+	// Используем useRef для отслеживания предыдущих значений фильтров
+	const prevFiltersRef = useRef<string>('');
+	const isLoadingRef = useRef(false);
+	
+	useEffect(() => {
+		// Предотвращаем параллельные запросы
+		if (isLoadingRef.current) {
+			return;
+		}
+		
+		// Создаем строковое представление фильтров для сравнения
+		const filtersKey = JSON.stringify({
+			page: filters.page,
+			limit: filters.limit,
+			type: filters.type || null,
+			category: filters.category || null,
+			walletId: filters.walletId || null,
+			startDate: filters.startDate || null,
+			endDate: filters.endDate || null,
+		});
+		
+		// Вызываем loadTransactions только если фильтры действительно изменились
+		if (prevFiltersRef.current !== filtersKey) {
+			prevFiltersRef.current = filtersKey;
+			
+			// Загружаем транзакции асинхронно
+			const loadData = async () => {
+				if (isLoadingRef.current) return;
+				
+				try {
+					isLoadingRef.current = true;
+					setLoading(true);
+					
+					const response: TransactionsResponse = await transactionsService.getAll(
+						filters
+					);
+					
+					setTransactions(prev => {
+						// Проверяем, изменились ли данные перед обновлением
+						const dataStr = JSON.stringify(response.data);
+						const prevStr = JSON.stringify(prev);
+						if (dataStr === prevStr) {
+							return prev;
+						}
+						return response.data;
+					});
+					setPagination(prev => {
+						// Проверяем, изменились ли значения перед обновлением
+						if (prev.current === response.page && 
+						    prev.pageSize === response.limit && 
+						    prev.total === response.total) {
+							return prev;
+						}
+						return {
+							current: response.page,
+							pageSize: response.limit,
+							total: response.total,
+						};
+					});
+				} catch (error) {
+					message.error('Ошибка при загрузке транзакций');
+				} finally {
+					isLoadingRef.current = false;
+					setLoading(false);
+				}
+			};
+			
+			loadData();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [filters.page, filters.limit, filters.type, filters.category, filters.walletId, filters.startDate, filters.endDate]);
+
 	const loadTransactions = async () => {
+		if (isLoadingRef.current) return;
+		
 		try {
+			isLoadingRef.current = true;
 			setLoading(true);
 			const response: TransactionsResponse = await transactionsService.getAll(
 				filters
 			);
-			setTransactions(response.data);
-			setPagination({
-				current: response.page,
-				pageSize: response.limit,
-				total: response.total,
+			setTransactions(prev => {
+				// Проверяем, изменились ли данные перед обновлением
+				const dataStr = JSON.stringify(response.data);
+				const prevStr = JSON.stringify(prev);
+				if (dataStr === prevStr) {
+					return prev;
+				}
+				return response.data;
+			});
+			setPagination(prev => {
+				// Проверяем, изменились ли значения перед обновлением
+				if (prev.current === response.page && 
+				    prev.pageSize === response.limit && 
+				    prev.total === response.total) {
+					return prev;
+				}
+				return {
+					current: response.page,
+					pageSize: response.limit,
+					total: response.total,
+				};
 			});
 		} catch (error) {
 			message.error('Ошибка при загрузке транзакций');
 		} finally {
+			isLoadingRef.current = false;
 			setLoading(false);
 		}
 	};
@@ -198,16 +286,22 @@ export default function TransactionsPage() {
 	};
 
 	const handleFilterChange = (key: keyof FilterTransactionDto, value: any) => {
-		setFilters(prev => ({
-			...prev,
-			[key]: value,
-			page: 1, // Сбрасываем на первую страницу при изменении фильтров
-		}));
+		setFilters(prev => {
+			// Проверяем, изменилось ли значение
+			if (prev[key] === value && key !== 'page') {
+				return prev; // Возвращаем тот же объект, если значение не изменилось
+			}
+			return {
+				...prev,
+				[key]: value,
+				page: 1, // Сбрасываем на первую страницу при изменении фильтров
+			};
+		});
 	};
 
 	const handleSearch = () => {
-		// Фильтрация по описанию будет на клиенте через filtered transactions
-		loadTransactions();
+		// Фильтрация по описанию происходит на клиенте через filteredTransactions
+		// Не нужно вызывать loadTransactions
 	};
 
 	// Фильтрация транзакций по поисковому запросу на клиенте
@@ -218,16 +312,35 @@ export default function TransactionsPage() {
 		: transactions;
 
 	const handleResetFilters = () => {
-		setFilters({ page: 1, limit: 10 });
+		setFilters(prev => {
+			// Проверяем, нужно ли сбрасывать
+			const resetFilters = { page: 1, limit: 10 };
+			if (prev.page === resetFilters.page && 
+			    prev.limit === resetFilters.limit && 
+			    !prev.type && 
+			    !prev.category && 
+			    !prev.walletId && 
+			    !prev.startDate && 
+			    !prev.endDate) {
+				return prev; // Уже сброшено
+			}
+			return resetFilters;
+		});
 		setSearchDescription('');
 	};
 
 	const handleTableChange = (page: number, pageSize: number) => {
-		setFilters(prev => ({
-			...prev,
-			page,
-			limit: pageSize,
-		}));
+		setFilters(prev => {
+			// Проверяем, изменились ли значения
+			if (prev.page === page && prev.limit === pageSize) {
+				return prev; // Возвращаем тот же объект, если значения не изменились
+			}
+			return {
+				...prev,
+				page,
+				limit: pageSize,
+			};
+		});
 	};
 
 	const formatAmount = (amount: string | number, currency: string = 'RUB') => {
@@ -349,19 +462,25 @@ export default function TransactionsPage() {
 		<ProtectedRoute>
 			<MainLayout>
 				<Space orientation='vertical' size='large' style={{ width: '100%' }}>
-					<Row justify='space-between' align='middle'>
-						<Col>
-							<Title level={2}>
+					<Row justify='space-between' align='middle' gutter={[16, 16]}>
+						<Col xs={24} sm={24} md={12}>
+							<Title level={2} style={{ margin: 0 }}>
 								<TransactionOutlined /> Транзакции
 							</Title>
 						</Col>
-						<Col>
+						<Col xs={24} sm={24} md={12} style={{ textAlign: 'right' }}>
 							<Button
 								type='primary'
-								icon={<PlusOutlined />}
 								onClick={handleCreate}
+								block
+								className="responsive-button"
 							>
-								Добавить транзакцию
+								<span className="button-text">
+									<PlusOutlined /> Добавить транзакцию
+								</span>
+								<span className="button-icon-only">
+									<PlusOutlined />
+								</span>
 							</Button>
 						</Col>
 					</Row>
@@ -422,13 +541,36 @@ export default function TransactionsPage() {
 								<Form.Item label='Период'>
 									<RangePicker
 										style={{ width: '100%' }}
-										onChange={dates => {
+										onChange={(dates) => {
 											if (dates && dates[0] && dates[1]) {
-												handleFilterChange('startDate', dates[0].toISOString());
-												handleFilterChange('endDate', dates[1].toISOString());
+												const [startDate, endDate] = dates;
+												const newStartDate = startDate.toISOString();
+												const newEndDate = endDate.toISOString();
+												setFilters(prev => {
+													// Проверяем, изменились ли даты
+													if (prev.startDate === newStartDate && prev.endDate === newEndDate && prev.page === 1) {
+														return prev;
+													}
+													return {
+														...prev,
+														startDate: newStartDate,
+														endDate: newEndDate,
+														page: 1,
+													};
+												});
 											} else {
-												handleFilterChange('startDate', undefined);
-												handleFilterChange('endDate', undefined);
+												setFilters(prev => {
+													// Проверяем, были ли даты уже undefined
+													if (!prev.startDate && !prev.endDate && prev.page === 1) {
+														return prev;
+													}
+													return {
+														...prev,
+														startDate: undefined,
+														endDate: undefined,
+														page: 1,
+													};
+												});
 											}
 										}}
 									/>
@@ -468,20 +610,145 @@ export default function TransactionsPage() {
 						) : filteredTransactions.length === 0 ? (
 							<Empty description='Нет транзакций' />
 						) : (
-							<Table
-								dataSource={filteredTransactions}
-								columns={columns}
-								rowKey='id'
-								pagination={{
-									current: pagination.current,
-									pageSize: pagination.pageSize,
-									total: pagination.total,
-									showSizeChanger: true,
-									showTotal: total => `Всего ${total} транзакций`,
-									onChange: handleTableChange,
-									onShowSizeChange: handleTableChange,
-								}}
-							/>
+							<>
+								{/* Десктопная таблица */}
+								<div className="desktop-table">
+									<Table
+										dataSource={filteredTransactions}
+										columns={columns}
+										rowKey='id'
+										pagination={{
+											current: pagination.current,
+											pageSize: pagination.pageSize,
+											total: pagination.total,
+											showSizeChanger: true,
+											showTotal: total => `Всего ${total} транзакций`,
+											onChange: handleTableChange,
+											onShowSizeChange: handleTableChange,
+										}}
+										scroll={{ x: 'max-content' }}
+									/>
+								</div>
+								
+								{/* Мобильные карточки */}
+								<div className="mobile-cards">
+									<Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+										{filteredTransactions.map((transaction) => {
+											const wallet = wallets.find(w => w.id === transaction.walletId);
+											const currency = wallet?.currency || 'RUB';
+											return (
+												<Card
+													key={transaction.id}
+													size="small"
+													style={{
+														borderLeft: `4px solid ${transaction.type === 'income' ? '#52c41a' : '#ff4d4f'}`,
+													}}
+													actions={[
+														<Button
+															type="link"
+															icon={<EditOutlined />}
+															onClick={() => handleEdit(transaction)}
+															key="edit"
+														>
+															Редактировать
+														</Button>,
+														<Popconfirm
+															key="delete"
+															title='Вы уверены?'
+															onConfirm={() => handleDelete(transaction.id)}
+															okText='Да'
+															cancelText='Нет'
+														>
+															<Button type="link" danger icon={<DeleteOutlined />}>
+																Удалить
+															</Button>
+														</Popconfirm>,
+													]}
+												>
+													<Space orientation="vertical" size="small" style={{ width: '100%' }}>
+														<Row justify="space-between" align="middle">
+															<Col>
+																<Tag color={transaction.type === 'income' ? 'green' : 'red'}>
+																	{transaction.type === 'income' ? 'Доход' : 'Расход'}
+																</Tag>
+															</Col>
+															<Col>
+																<span
+																	style={{
+																		color: transaction.type === 'income' ? '#52c41a' : '#ff4d4f',
+																		fontWeight: 'bold',
+																		fontSize: '18px',
+																	}}
+																>
+																	{transaction.type === 'income' ? '+' : '-'}
+																	{formatAmount(transaction.amount, currency)}
+																</span>
+															</Col>
+														</Row>
+														<div>
+															<Text strong>{transaction.category}</Text>
+														</div>
+														{transaction.description && (
+															<div>
+																<Text type="secondary">{transaction.description}</Text>
+															</div>
+														)}
+														<Row justify="space-between">
+															<Col>
+																<Text type="secondary" style={{ fontSize: '12px' }}>
+																	{format(new Date(transaction.date), 'dd.MM.yyyy HH:mm')}
+																</Text>
+															</Col>
+															{wallet && (
+																<Col>
+																	<Tag>{wallet.name} ({wallet.currency})</Tag>
+																</Col>
+															)}
+														</Row>
+														{transaction.tags && transaction.tags.length > 0 && (
+															<div>
+																<Space size={[0, 8]} wrap>
+																	{transaction.tags.map((tag, index) => (
+																		<Tag key={index} style={{ fontSize: '12px' }}>{tag}</Tag>
+																	))}
+																</Space>
+															</div>
+														)}
+													</Space>
+												</Card>
+											);
+										})}
+									</Space>
+									
+									{/* Пагинация для мобильных */}
+									{pagination.total > 0 && (
+										<div style={{ marginTop: 16, textAlign: 'center' }}>
+											<Space>
+												<Button
+													disabled={pagination.current === 1}
+													onClick={() => handleTableChange(pagination.current - 1, pagination.pageSize)}
+												>
+													Назад
+												</Button>
+												<Text>
+													Страница {pagination.current} из {Math.max(1, Math.ceil(pagination.total / pagination.pageSize))}
+												</Text>
+												<Button
+													disabled={pagination.current >= Math.ceil(pagination.total / pagination.pageSize)}
+													onClick={() => handleTableChange(pagination.current + 1, pagination.pageSize)}
+												>
+													Вперед
+												</Button>
+											</Space>
+											<div style={{ marginTop: 8 }}>
+												<Text type="secondary" style={{ fontSize: '12px' }}>
+													Всего {pagination.total} транзакций
+												</Text>
+											</div>
+										</div>
+									)}
+								</div>
+							</>
 						)}
 					</Card>
 				</Space>

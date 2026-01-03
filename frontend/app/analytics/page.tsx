@@ -306,50 +306,61 @@ export default function AnalyticsPage() {
             <>
               {/* График доходов и расходов (Line Chart) */}
               <Card title="Динамика доходов и расходов">
-                <ResponsiveContainer width="100%" height={300}>
-                  <LineChart data={lineChartData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis
-                      dataKey="period"
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis tickFormatter={(value) => formatAmount(value)} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="income"
-                      stroke="#52c41a"
-                      strokeWidth={2}
-                      name="Доходы"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="expense"
-                      stroke="#f5222d"
-                      strokeWidth={2}
-                      name="Расходы"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="net"
-                      stroke="#1890ff"
-                      strokeWidth={2}
-                      name="Баланс"
-                      strokeDasharray="5 5"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
+                <div style={{ width: '100%', height: 300, minHeight: 250 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={lineChartData} margin={{ top: 5, right: 10, left: 0, bottom: 60 }}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis
+                        dataKey="period"
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                        tick={{ fontSize: 12 }}
+                        interval="preserveStartEnd"
+                      />
+                      <YAxis 
+                        tickFormatter={(value) => formatAmount(value)} 
+                        tick={{ fontSize: 12 }}
+                      />
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend wrapperStyle={{ paddingTop: 20 }} />
+                      <Line
+                        type="monotone"
+                        dataKey="income"
+                        stroke="#52c41a"
+                        strokeWidth={2}
+                        name="Доходы"
+                        dot={{ r: 3 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="expense"
+                        stroke="#f5222d"
+                        strokeWidth={2}
+                        name="Расходы"
+                        dot={{ r: 3 }}
+                      />
+                      <Line
+                        type="monotone"
+                        dataKey="net"
+                        stroke="#1890ff"
+                        strokeWidth={2}
+                        name="Баланс"
+                        strokeDasharray="5 5"
+                        dot={{ r: 3 }}
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
               </Card>
 
               <Row gutter={[16, 16]}>
                 {/* Круговая диаграмма по категориям (Pie Chart) */}
-                <Col xs={24} lg={12}>
+                <Col xs={24} md={24} lg={12}>
                   <Card title="Расходы по категориям">
                     {pieChartData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
+                      <div style={{ width: '100%', height: 300, minHeight: 250 }}>
+                        <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={pieChartData}
@@ -379,7 +390,8 @@ export default function AnalyticsPage() {
                           />
                           <Legend />
                         </PieChart>
-                      </ResponsiveContainer>
+                        </ResponsiveContainer>
+                      </div>
                     ) : (
                       <div
                         style={{
@@ -395,10 +407,11 @@ export default function AnalyticsPage() {
                 </Col>
 
                 {/* Столбчатая диаграмма динамики (Bar Chart) */}
-                <Col xs={24} lg={12}>
+                <Col xs={24} md={24} lg={12}>
                   <Card title="Тренды доходов и расходов">
                     {barChartData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height={300}>
+                      <div style={{ width: '100%', height: 300, minHeight: 250 }}>
+                        <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={barChartData}>
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis
@@ -414,6 +427,7 @@ export default function AnalyticsPage() {
                           <Bar dataKey="expense" fill="#f5222d" name="Расходы" />
                         </BarChart>
                       </ResponsiveContainer>
+                      </div>
                     ) : (
                       <div
                         style={{
@@ -505,11 +519,12 @@ export default function AnalyticsPage() {
                     </Button>
                   }
                 >
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={goalsProgressData} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis type="number" tickFormatter={(value) => formatAmount(value)} />
-                      <YAxis dataKey="name" type="category" width={150} />
+                  <div style={{ width: '100%', height: 300, minHeight: 250 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={goalsProgressData} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis type="number" tickFormatter={(value) => formatAmount(value)} tick={{ fontSize: 12 }} />
+                        <YAxis dataKey="name" type="category" width={100} tick={{ fontSize: 12 }} />
                       <Tooltip
                         formatter={(value: number | undefined) =>
                           value !== undefined ? formatAmount(value) : ''
@@ -531,13 +546,14 @@ export default function AnalyticsPage() {
                       />
                     </BarChart>
                   </ResponsiveContainer>
+                  </div>
                 </Card>
               )}
 
               {/* График инвестиционного портфеля */}
               {portfolio && portfolioPieData.length > 0 && (
                 <Row gutter={[16, 16]}>
-                  <Col xs={24} lg={12}>
+                  <Col xs={24} md={24} lg={12}>
                     <Card
                       title={
                         <Space>
@@ -555,7 +571,8 @@ export default function AnalyticsPage() {
                         </Button>
                       }
                     >
-                      <ResponsiveContainer width="100%" height={300}>
+                      <div style={{ width: '100%', height: 300, minHeight: 250 }}>
+                        <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
                             data={portfolioPieData}
@@ -586,9 +603,10 @@ export default function AnalyticsPage() {
                           <Legend />
                         </PieChart>
                       </ResponsiveContainer>
+                      </div>
                     </Card>
                   </Col>
-                  <Col xs={24} lg={12}>
+                  <Col xs={24} md={24} lg={12}>
                     <Card title="Статистика портфеля">
                       <Space orientation="vertical" style={{ width: '100%' }} size="large">
                         <Statistic
@@ -645,7 +663,7 @@ export default function AnalyticsPage() {
                     {categoryData.map((item, index) => {
                       const totalValue = parseFloat(item.total || '0') || 0;
                       return (
-                        <Col xs={24} sm={12} md={8} lg={6} key={item.category || index}>
+                        <Col xs={24} sm={12} md={12} lg={8} xl={6} key={item.category || index}>
                           <Card size="small">
                             <Statistic
                               title={item.category}

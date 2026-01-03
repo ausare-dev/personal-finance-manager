@@ -278,19 +278,25 @@ export default function GoalsPage() {
     <ProtectedRoute>
       <MainLayout>
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Title level={2}>
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={12}>
+              <Title level={2} style={{ margin: 0 }}>
                 <AimOutlined /> Финансовые цели
               </Title>
             </Col>
-            <Col>
+            <Col xs={24} sm={24} md={12} style={{ textAlign: 'right' }}>
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
                 onClick={handleCreate}
+                block
+                className="responsive-button"
               >
-                Добавить цель
+                <span className="button-text">
+                  <PlusOutlined /> Добавить цель
+                </span>
+                <span className="button-icon-only">
+                  <PlusOutlined />
+                </span>
               </Button>
             </Col>
           </Row>

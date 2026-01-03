@@ -147,7 +147,9 @@ export default function DashboardPage() {
       <MainLayout>
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <div>
-            <Title level={2}>Добро пожаловать, {user?.email}!</Title>
+            <Title level={2} style={{ fontSize: 'clamp(20px, 4vw, 28px)' }}>
+              Добро пожаловать, {user?.email}!
+            </Title>
           </div>
 
           {/* Карточки общей статистики */}
@@ -263,7 +265,7 @@ export default function DashboardPage() {
             </Col>
 
             {/* Последние транзакции */}
-            <Col xs={24} lg={12}>
+            <Col xs={24} md={24} lg={12}>
               <Card
                 title={
                   <Space>
@@ -276,13 +278,16 @@ export default function DashboardPage() {
                 {recentTransactions.length === 0 ? (
                   <Empty description="Нет транзакций" />
                 ) : (
-                  <Table
-                    dataSource={recentTransactions}
-                    columns={transactionColumns}
-                    pagination={false}
-                    rowKey="id"
-                    size="small"
-                  />
+                  <div style={{ overflowX: 'auto' }}>
+                    <Table
+                      dataSource={recentTransactions}
+                      columns={transactionColumns}
+                      pagination={false}
+                      rowKey="id"
+                      size="small"
+                      scroll={{ x: 'max-content' }}
+                    />
+                  </div>
                 )}
               </Card>
             </Col>

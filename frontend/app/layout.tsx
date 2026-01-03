@@ -4,6 +4,7 @@ import { ConfigProvider, App as AntdApp } from 'antd';
 import ruRU from 'antd/locale/ru_RU';
 import { AuthProvider } from '../contexts/AuthContext';
 import { AppProvider } from '../contexts/AppContext';
+import { FixResponsiveObserver } from './fix-responsive-observer';
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -20,6 +21,7 @@ export default function RootLayout({
     <html lang="ru">
       <body>
         <AntdRegistry>
+          <FixResponsiveObserver />
           <ConfigProvider
             locale={ruRU}
             theme={{
@@ -27,6 +29,10 @@ export default function RootLayout({
                 colorPrimary: '#1890ff',
                 borderRadius: 6,
               },
+            }}
+            componentSize="large"
+            button={{
+              autoInsertSpace: false,
             }}
           >
             <AntdApp>

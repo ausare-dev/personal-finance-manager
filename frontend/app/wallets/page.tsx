@@ -248,18 +248,19 @@ export default function WalletsPage() {
     <ProtectedRoute>
       <MainLayout>
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Title level={2}>
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={12}>
+              <Title level={2} style={{ margin: 0 }}>
                 <WalletOutlined /> Кошельки
               </Title>
             </Col>
-            <Col>
-              <Space>
+            <Col xs={24} sm={24} md={12}>
+              <Space direction="vertical" style={{ width: '100%' }} size="middle">
                 <Select
                   value={baseCurrency}
                   onChange={setBaseCurrency}
-                  style={{ width: 120 }}
+                  style={{ width: '100%' }}
+                  size="large"
                 >
                   {CURRENCIES.map((curr) => (
                     <Option key={curr} value={curr}>
@@ -269,10 +270,16 @@ export default function WalletsPage() {
                 </Select>
                 <Button
                   type="primary"
-                  icon={<PlusOutlined />}
                   onClick={handleCreate}
+                  block
+                  className="responsive-button"
                 >
-                  Добавить кошелек
+                  <span className="button-text">
+                    <PlusOutlined /> Добавить кошелек
+                  </span>
+                  <span className="button-icon-only">
+                    <PlusOutlined />
+                  </span>
                 </Button>
               </Space>
             </Col>
@@ -315,12 +322,15 @@ export default function WalletsPage() {
             ) : wallets.length === 0 ? (
               <Empty description="Нет кошельков" />
             ) : (
-              <Table
-                dataSource={wallets}
-                columns={columns}
-                rowKey="id"
-                pagination={false}
-              />
+              <div style={{ overflowX: 'auto' }}>
+                <Table
+                  dataSource={wallets}
+                  columns={columns}
+                  rowKey="id"
+                  pagination={false}
+                  scroll={{ x: 'max-content' }}
+                />
+              </div>
             )}
           </Card>
         </Space>
