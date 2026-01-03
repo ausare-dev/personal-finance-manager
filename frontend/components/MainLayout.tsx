@@ -194,7 +194,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
               fontWeight: 'bold',
             }}
           >
-            {collapsed ? 'PFM' : 'Finance Manager'}
+            {collapsed ? 'PFM' : 'Personal Finance Manager'}
           </div>
           <Menu
             theme="dark"
@@ -208,7 +208,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Drawer
           title={
             <div style={{ color: '#fff', fontSize: 18, fontWeight: 'bold', padding: '8px 0' }}>
-              Finance Manager
+              Personal Finance Manager
             </div>
           }
           placement="left"

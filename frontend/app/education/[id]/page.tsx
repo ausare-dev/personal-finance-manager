@@ -22,8 +22,10 @@ import { educationService } from '@/services/education.service';
 import type { Article } from '@/types';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
 
 export default function ArticlePage() {
   const params = useParams();
@@ -123,16 +125,75 @@ export default function ArticlePage() {
               <Divider />
 
               {/* Содержимое статьи */}
-              <Paragraph
-                style={{
-                  fontSize: '16px',
-                  lineHeight: '1.8',
-                  whiteSpace: 'pre-wrap',
-                  wordBreak: 'break-word',
-                }}
-              >
-                {article.content}
-              </Paragraph>
+              <div className="article-content">
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    h1: ({ node, ...props }) => <Title level={1} {...props} />,
+                    h2: ({ node, ...props }) => <Title level={2} {...props} />,
+                    h3: ({ node, ...props }) => <Title level={3} {...props} />,
+                    h4: ({ node, ...props }) => <Title level={4} {...props} />,
+                    h5: ({ node, ...props }) => <Title level={5} {...props} />,
+                    h6: ({ node, ...props }) => <Title level={5} {...props} />,
+                    p: ({ node, ...props }) => (
+                      <p style={{ marginBottom: '16px', fontSize: '16px', lineHeight: '1.8' }} {...props} />
+                    ),
+                    ul: ({ node, ...props }) => (
+                      <ul style={{ marginBottom: '16px', paddingLeft: '24px' }} {...props} />
+                    ),
+                    ol: ({ node, ...props }) => (
+                      <ol style={{ marginBottom: '16px', paddingLeft: '24px' }} {...props} />
+                    ),
+                    li: ({ node, ...props }) => (
+                      <li style={{ marginBottom: '8px', lineHeight: '1.8' }} {...props} />
+                    ),
+                    strong: ({ node, ...props }) => (
+                      <strong style={{ fontWeight: 600 }} {...props} />
+                    ),
+                    code: ({ node, inline, ...props }: any) =>
+                      inline ? (
+                        <code
+                          style={{
+                            background: '#f5f5f5',
+                            padding: '2px 6px',
+                            borderRadius: '4px',
+                            fontFamily: 'monospace',
+                            fontSize: '14px',
+                          }}
+                          {...props}
+                        />
+                      ) : (
+                        <code
+                          style={{
+                            display: 'block',
+                            background: '#f5f5f5',
+                            padding: '12px',
+                            borderRadius: '4px',
+                            fontFamily: 'monospace',
+                            fontSize: '14px',
+                            overflow: 'auto',
+                            marginBottom: '16px',
+                          }}
+                          {...props}
+                        />
+                      ),
+                    blockquote: ({ node, ...props }) => (
+                      <blockquote
+                        style={{
+                          borderLeft: '4px solid #1890ff',
+                          paddingLeft: '16px',
+                          margin: '16px 0',
+                          color: '#666',
+                          fontStyle: 'italic',
+                        }}
+                        {...props}
+                      />
+                    ),
+                  }}
+                >
+                  {article.content}
+                </ReactMarkdown>
+              </div>
 
               <Divider />
 
