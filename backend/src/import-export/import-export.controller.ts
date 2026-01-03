@@ -4,13 +4,15 @@ import {
   Get,
   UseInterceptors,
   UploadedFile,
+  Body,
   Query,
   Res,
+  Req,
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import type { Response } from 'express';
+import type { Response, Request } from 'express';
 import { ImportExportService } from './import-export.service';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -23,6 +25,7 @@ export class ImportExportController {
   @UseInterceptors(FileInterceptor('file'))
   async importCsv(
     @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
     @CurrentUser() user: { id: string },
   ) {
     if (!file) {
@@ -37,7 +40,10 @@ export class ImportExportController {
       };
     }
 
-    const result = await this.importExportService.importFromCsv(file, user.id);
+    // Извлекаем walletId из body (FormData)
+    const walletId = (req.body && req.body.walletId) ? req.body.walletId : undefined;
+
+    const result = await this.importExportService.importFromCsv(file, user.id, walletId);
     return result;
   }
 
@@ -46,6 +52,7 @@ export class ImportExportController {
   @UseInterceptors(FileInterceptor('file'))
   async importExcel(
     @UploadedFile() file: Express.Multer.File,
+    @Req() req: Request,
     @CurrentUser() user: { id: string },
   ) {
     if (!file) {
@@ -66,7 +73,10 @@ export class ImportExportController {
       };
     }
 
-    const result = await this.importExportService.importFromExcel(file, user.id);
+    // Извлекаем walletId из body (FormData)
+    const walletId = (req.body && req.body.walletId) ? req.body.walletId : undefined;
+
+    const result = await this.importExportService.importFromExcel(file, user.id, walletId);
     return result;
   }
 

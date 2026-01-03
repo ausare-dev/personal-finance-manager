@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MainLayout from '@/components/MainLayout';
 import {
@@ -16,6 +16,8 @@ import {
   Table,
   Tag,
   Divider,
+  Select,
+  Spin,
 } from 'antd';
 import {
   UploadOutlined,
@@ -24,13 +26,17 @@ import {
   FileTextOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  WalletOutlined,
 } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
 import { importExportService, type ImportResponse } from '@/services/import-export.service';
+import { walletsService } from '@/services/wallets.service';
+import type { Wallet } from '@/types';
 import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
 const { Dragger } = Upload;
+const { Option } = Select;
 
 export default function ImportExportPage() {
   const { message } = App.useApp();
@@ -39,6 +45,28 @@ export default function ImportExportPage() {
   const [csvExporting, setCsvExporting] = useState(false);
   const [excelExporting, setExcelExporting] = useState(false);
   const [importResult, setImportResult] = useState<ImportResponse | null>(null);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [selectedWalletId, setSelectedWalletId] = useState<string | undefined>(undefined);
+  const [loadingWallets, setLoadingWallets] = useState(true);
+
+  // Загружаем список кошельков
+  useEffect(() => {
+    const loadWallets = async () => {
+      try {
+        const walletsList = await walletsService.getAll();
+        setWallets(walletsList);
+        // Автоматически выбираем первый кошелек, если он есть
+        if (walletsList.length > 0) {
+          setSelectedWalletId(walletsList[0].id);
+        }
+      } catch (error) {
+        message.error('Не удалось загрузить список кошельков');
+      } finally {
+        setLoadingWallets(false);
+      }
+    };
+    loadWallets();
+  }, [message]);
 
   // CSV импорт
   const csvUploadProps: UploadProps = {
@@ -65,6 +93,11 @@ export default function ImportExportPage() {
   };
 
   const handleImport = async (file: File, type: 'csv' | 'excel') => {
+    if (!selectedWalletId && wallets.length > 0) {
+      message.error('Пожалуйста, выберите кошелек для импорта');
+      return;
+    }
+
     try {
       if (type === 'csv') {
         setCsvUploading(true);
@@ -74,8 +107,8 @@ export default function ImportExportPage() {
       setImportResult(null);
 
       const result = await (type === 'csv'
-        ? importExportService.importCSV(file)
-        : importExportService.importExcel(file));
+        ? importExportService.importCSV(file, selectedWalletId)
+        : importExportService.importExcel(file, selectedWalletId));
 
       setImportResult(result);
 
@@ -165,6 +198,41 @@ export default function ImportExportPage() {
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Title level={2}>Импорт и экспорт транзакций</Title>
 
+          {/* Выбор кошелька */}
+          <Card>
+            <Space orientation="vertical" style={{ width: '100%' }} size="middle">
+              <Text strong>
+                <WalletOutlined /> Выберите кошелек для импорта:
+              </Text>
+              {loadingWallets ? (
+                <Spin />
+              ) : wallets.length === 0 ? (
+                <Alert
+                  title="У вас нет кошельков"
+                  description="Создайте хотя бы один кошелек перед импортом транзакций"
+                  type="warning"
+                />
+              ) : (
+                <Select
+                  value={selectedWalletId}
+                  onChange={setSelectedWalletId}
+                  style={{ width: '100%' }}
+                  size="large"
+                  placeholder="Выберите кошелек"
+                >
+                  {wallets.map((wallet) => (
+                    <Option key={wallet.id} value={wallet.id}>
+                      {wallet.name} ({wallet.currency})
+                    </Option>
+                  ))}
+                </Select>
+              )}
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                💡 Подсказка: Вы можете не указывать walletId в файле — будет использован выбранный кошелек
+              </Text>
+            </Space>
+          </Card>
+
           <Row gutter={[16, 16]}>
             {/* Импорт CSV */}
             <Col xs={24} lg={12}>
@@ -178,12 +246,13 @@ export default function ImportExportPage() {
               >
                 <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                   <Text type="secondary">
-                    Загрузите CSV файл с транзакциями. Файл должен содержать
-                    колонки: amount, type, category, date, walletId (опционально:
-                    description, tags)
+                    Загрузите CSV файл с транзакциями. Обязательные колонки: 
+                    <code>amount</code>, <code>type</code> (income/expense), <code>category</code>, 
+                    <code>date</code>. Опционально: <code>walletId</code> (если не указан, будет использован выбранный кошелек), 
+                    <code>description</code>, <code>tags</code>.
                   </Text>
 
-                  <Dragger {...csvUploadProps} disabled={csvUploading}>
+                  <Dragger {...csvUploadProps} disabled={csvUploading || !selectedWalletId}>
                     <p className="ant-upload-drag-icon">
                       <UploadOutlined style={{ fontSize: '48px', color: '#1890ff' }} />
                     </p>
@@ -216,12 +285,13 @@ export default function ImportExportPage() {
               >
                 <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                   <Text type="secondary">
-                    Загрузите Excel файл (XLSX или XLS) с транзакциями. Файл
-                    должен содержать колонки: amount, type, category, date,
-                    walletId (опционально: description, tags)
+                    Загрузите Excel файл (XLSX или XLS) с транзакциями. Обязательные колонки: 
+                    <code>amount</code>, <code>type</code> (income/expense), <code>category</code>, 
+                    <code>date</code>. Опционально: <code>walletId</code> (если не указан, будет использован выбранный кошелек), 
+                    <code>description</code>, <code>tags</code>.
                   </Text>
 
-                  <Dragger {...excelUploadProps} disabled={excelUploading}>
+                  <Dragger {...excelUploadProps} disabled={excelUploading || !selectedWalletId}>
                     <p className="ant-upload-drag-icon">
                       <UploadOutlined style={{ fontSize: '48px', color: '#52c41a' }} />
                     </p>
@@ -250,7 +320,7 @@ export default function ImportExportPage() {
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={12}>
                     <Alert
-                      message={
+                      title={
                         <Space>
                           <CheckCircleOutlined />
                           <span>Успешно импортировано</span>
@@ -267,7 +337,7 @@ export default function ImportExportPage() {
                   </Col>
                   <Col xs={24} sm={12}>
                     <Alert
-                      message={
+                      title={
                         <Space>
                           <CloseCircleOutlined />
                           <span>Ошибок импорта</span>
@@ -285,7 +355,7 @@ export default function ImportExportPage() {
                 </Row>
 
                 {importResult.message && (
-                  <Alert message={importResult.message} type="info" />
+                  <Alert title={importResult.message} type="info" />
                 )}
 
                 {importResult.errors && importResult.errors.length > 0 && (

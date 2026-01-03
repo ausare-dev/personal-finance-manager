@@ -35,7 +35,7 @@ import { walletsService } from '@/services/wallets.service';
 import { currenciesService } from '@/services/currencies.service';
 import type { Wallet, CreateWalletDto, UpdateWalletDto } from '@/types';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 // Схема валидации для формы
@@ -255,7 +255,7 @@ export default function WalletsPage() {
               </Title>
             </Col>
             <Col xs={24} sm={24} md={12}>
-              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <Select
                   value={baseCurrency}
                   onChange={setBaseCurrency}

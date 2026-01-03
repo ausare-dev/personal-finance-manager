@@ -12,9 +12,12 @@ export const importExportService = {
   /**
    * Импортировать транзакции из CSV
    */
-  async importCSV(file: File): Promise<ImportResponse> {
+  async importCSV(file: File, walletId?: string): Promise<ImportResponse> {
     const formData = new FormData();
     formData.append('file', file);
+    if (walletId) {
+      formData.append('walletId', walletId);
+    }
 
     const response = await api.post<ImportResponse>(
       API_ENDPOINTS.IMPORT_EXPORT.CSV,
@@ -31,9 +34,12 @@ export const importExportService = {
   /**
    * Импортировать транзакции из Excel
    */
-  async importExcel(file: File): Promise<ImportResponse> {
+  async importExcel(file: File, walletId?: string): Promise<ImportResponse> {
     const formData = new FormData();
     formData.append('file', file);
+    if (walletId) {
+      formData.append('walletId', walletId);
+    }
 
     const response = await api.post<ImportResponse>(
       API_ENDPOINTS.IMPORT_EXPORT.EXCEL,
