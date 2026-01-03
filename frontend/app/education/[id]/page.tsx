@@ -92,7 +92,7 @@ export default function ArticlePage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Button
             icon={<ArrowLeftOutlined />}
             onClick={handleBack}
@@ -102,9 +102,9 @@ export default function ArticlePage() {
           </Button>
 
           <Card>
-            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
               {/* Заголовок и метаданные */}
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
+              <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                 <Space>
                   <Tag color="blue" icon={<BookOutlined />}>
                     {article.category}

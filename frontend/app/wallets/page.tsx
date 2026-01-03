@@ -14,7 +14,7 @@ import {
   Input,
   Select,
   Popconfirm,
-  message,
+  App,
   Tag,
   Row,
   Col,
@@ -48,6 +48,7 @@ const walletSchema = yup.object({
 const CURRENCIES = ['RUB', 'USD', 'EUR', 'GBP', 'JPY', 'CNY', 'KZT', 'BYN'];
 
 export default function WalletsPage() {
+  const { message } = App.useApp();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -246,7 +247,7 @@ export default function WalletsPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Row justify="space-between" align="middle">
             <Col>
               <Title level={2}>
@@ -294,8 +295,10 @@ export default function WalletsPage() {
                   title={`Общий баланс (${baseCurrency})`}
                   value={totalBalance}
                   precision={2}
-                  valueStyle={{
-                    color: totalBalance >= 0 ? '#52c41a' : '#ff4d4f',
+                  styles={{
+                    content: {
+                      color: totalBalance >= 0 ? '#52c41a' : '#ff4d4f',
+                    },
                   }}
                   suffix={baseCurrency}
                 />

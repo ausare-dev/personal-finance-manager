@@ -28,6 +28,13 @@ export interface IncomeExpenseStats {
   transactionsCount: number;
 }
 
+export interface IncomeExpenseData {
+  period: string;
+  income: number;
+  expense: number;
+  net: number;
+}
+
 export interface CategoryStats {
   category: string;
   totalAmount: number;
@@ -103,61 +110,88 @@ export class AnalyticsService {
   }
 
   /**
-   * Получить статистику доходов и расходов за период
+   * Получить статистику доходов и расходов за период (с группировкой по периодам)
    */
   async getIncomeExpense(
     userId: string,
     startDate?: Date,
     endDate?: Date,
-  ): Promise<IncomeExpenseStats> {
+    groupBy: 'day' | 'week' | 'month' = 'day',
+  ): Promise<IncomeExpenseData[]> {
+    // Установить значения по умолчанию, если они не предоставлены
+    const defaultStartDate = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 дней назад
+    const defaultEndDate = endDate || new Date();
+
     const queryBuilder = this.transactionRepository.createQueryBuilder(
       'transaction',
     );
 
-    queryBuilder.where('transaction.userId = :userId', { userId });
-
-    if (startDate && endDate) {
-      queryBuilder.andWhere('transaction.date BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
+    queryBuilder
+      .where('transaction.userId = :userId', { userId })
+      .andWhere('transaction.date BETWEEN :startDate AND :endDate', {
+        startDate: defaultStartDate,
+        endDate: defaultEndDate,
       });
-    } else if (startDate) {
-      queryBuilder.andWhere('transaction.date >= :startDate', { startDate });
-    } else if (endDate) {
-      queryBuilder.andWhere('transaction.date <= :endDate', { endDate });
-    }
 
-    const transactions = await queryBuilder.getMany();
+    const transactions = await queryBuilder
+      .orderBy('transaction.date', 'ASC')
+      .getMany();
 
-    let totalIncome = new Decimal(0);
-    let totalExpense = new Decimal(0);
+    // Группировка по периодам
+    const periodMap = new Map<
+      string,
+      { income: Decimal; expense: Decimal }
+    >();
 
     for (const transaction of transactions) {
-      const amount = new Decimal(transaction.amount.toString());
-      if (transaction.type === TransactionType.INCOME) {
-        totalIncome = totalIncome.plus(amount);
+      const date = new Date(transaction.date);
+      let periodKey: string;
+
+      if (groupBy === 'day') {
+        periodKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      } else if (groupBy === 'week') {
+        const weekStart = new Date(date);
+        weekStart.setDate(date.getDate() - date.getDay()); // Начало недели (воскресенье)
+        periodKey = weekStart.toISOString().split('T')[0];
       } else {
-        totalExpense = totalExpense.plus(amount);
+        // month
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        periodKey = `${date.getFullYear()}-${month}`;
+      }
+
+      const existing = periodMap.get(periodKey);
+      const amount = new Decimal(transaction.amount.toString());
+
+      if (existing) {
+        if (transaction.type === TransactionType.INCOME) {
+          existing.income = existing.income.plus(amount);
+        } else {
+          existing.expense = existing.expense.plus(amount);
+        }
+      } else {
+        periodMap.set(periodKey, {
+          income:
+            transaction.type === TransactionType.INCOME ? amount : new Decimal(0),
+          expense:
+            transaction.type === TransactionType.EXPENSE ? amount : new Decimal(0),
+        });
       }
     }
 
-    const netAmount = totalIncome.minus(totalExpense);
+    // Преобразовать в массив и рассчитать баланс
+    const result: IncomeExpenseData[] = Array.from(periodMap.entries())
+      .map(([period, data]) => {
+        const net = data.income.minus(data.expense);
+        return {
+          period,
+          income: data.income.toNumber(),
+          expense: data.expense.toNumber(),
+          net: net.toNumber(),
+        };
+      })
+      .sort((a, b) => a.period.localeCompare(b.period)); // Сортировать по периоду
 
-    // Определить период
-    const dates = transactions.map((t) => new Date(t.date));
-    const actualStartDate = startDate || (dates.length > 0 ? new Date(Math.min(...dates.map(d => d.getTime()))) : new Date());
-    const actualEndDate = endDate || (dates.length > 0 ? new Date(Math.max(...dates.map(d => d.getTime()))) : new Date());
-
-    return {
-      totalIncome: totalIncome.toNumber(),
-      totalExpense: totalExpense.toNumber(),
-      netAmount: netAmount.toNumber(),
-      period: {
-        start: actualStartDate,
-        end: actualEndDate,
-      },
-      transactionsCount: transactions.length,
-    };
+    return result;
   }
 
   /**

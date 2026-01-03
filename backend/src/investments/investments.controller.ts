@@ -33,8 +33,16 @@ export class InvestmentsController {
   }
 
   @Get('portfolio')
-  getPortfolio(@CurrentUser() user: { id: string }) {
-    return this.investmentsService.getPortfolio(user.id);
+  async getPortfolio(@CurrentUser() user: { id: string }) {
+    const portfolio = await this.investmentsService.getPortfolio(user.id);
+    // Transform to match frontend expectations
+    return {
+      totalValue: portfolio.totalValue.toString(),
+      totalCost: portfolio.totalCost.toString(),
+      profitLoss: portfolio.totalProfitLoss.toString(),
+      profitLossPercentage: portfolio.totalProfitLossPercentage,
+      investments: portfolio.investments,
+    };
   }
 
   @Get(':id')

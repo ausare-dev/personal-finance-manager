@@ -13,7 +13,7 @@ import {
   Space,
   Spin,
   Statistic,
-  message,
+  App,
 } from 'antd';
 import {
   LineChart,
@@ -69,6 +69,7 @@ const COLORS = [
 ];
 
 export default function AnalyticsPage() {
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [incomeExpenseData, setIncomeExpenseData] = useState<
@@ -104,18 +105,18 @@ export default function AnalyticsPage() {
       const [overviewData, incomeExpense, categories, trends, goalsData, portfolioData] =
         await Promise.all([
           analyticsService.getOverview(),
-          analyticsService.getIncomeExpense(filters),
-          analyticsService.getByCategory(filters),
-          analyticsService.getTrends(filters),
+          analyticsService.getIncomeExpense(filters).catch(() => []), // Если ошибка, возвращаем пустой массив
+          analyticsService.getByCategory({ ...filters, type: 'expense' }).catch(() => []), // Только расходы для секции "Расходы по категориям"
+          analyticsService.getTrends(filters).catch(() => []), // Если ошибка, возвращаем пустой массив
           goalsService.getAll().catch(() => []), // Если ошибка, возвращаем пустой массив
           investmentsService.getPortfolio().catch(() => null), // Если ошибка, возвращаем null
         ]);
 
       setOverview(overviewData);
-      setIncomeExpenseData(incomeExpense);
-      setCategoryData(categories);
-      setTrendData(trends);
-      setGoals(goalsData);
+      setIncomeExpenseData(Array.isArray(incomeExpense) ? incomeExpense : []);
+      setCategoryData(Array.isArray(categories) ? categories : []);
+      setTrendData(Array.isArray(trends) ? trends : []);
+      setGoals(Array.isArray(goalsData) ? goalsData : []);
       setPortfolio(portfolioData);
     } catch (error) {
       message.error('Ошибка при загрузке аналитики');
@@ -135,7 +136,7 @@ export default function AnalyticsPage() {
   };
 
   // Подготовка данных для графика доходов/расходов (Line Chart)
-  const lineChartData = incomeExpenseData.map((item) => ({
+  const lineChartData = (Array.isArray(incomeExpenseData) ? incomeExpenseData : []).map((item) => ({
     period: item.period,
     income: parseFloat(item.income),
     expense: Math.abs(parseFloat(item.expense)),
@@ -143,21 +144,21 @@ export default function AnalyticsPage() {
   }));
 
   // Подготовка данных для круговой диаграммы (Pie Chart)
-  const pieChartData = categoryData.map((item) => ({
+  const pieChartData = (Array.isArray(categoryData) ? categoryData : []).map((item) => ({
     name: item.category,
     value: Math.abs(parseFloat(item.total)),
     count: item.count,
   }));
 
   // Подготовка данных для столбчатой диаграммы (Bar Chart)
-  const barChartData = trendData.map((item) => ({
+  const barChartData = (Array.isArray(trendData) ? trendData : []).map((item) => ({
     date: item.date,
     income: parseFloat(item.income),
     expense: Math.abs(parseFloat(item.expense)),
   }));
 
   // Подготовка данных для графика прогресса целей
-  const goalsProgressData = goals.map((goal) => ({
+  const goalsProgressData = (Array.isArray(goals) ? goals : []).map((goal) => ({
     name: goal.name,
     current: parseFloat(goal.currentAmount),
     target: parseFloat(goal.targetAmount),
@@ -211,7 +212,7 @@ export default function AnalyticsPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Row justify="space-between" align="middle">
             <Col>
               <Title level={2}>
@@ -253,7 +254,7 @@ export default function AnalyticsPage() {
                     value={parseFloat(overview.totalIncome)}
                     precision={2}
                     suffix="₽"
-                    valueStyle={{ color: '#52c41a' }}
+                    styles={{ content: { color: '#52c41a' } }}
                   />
                 </Card>
               </Col>
@@ -264,7 +265,7 @@ export default function AnalyticsPage() {
                     value={parseFloat(overview.totalExpense)}
                     precision={2}
                     suffix="₽"
-                    valueStyle={{ color: '#f5222d' }}
+                    styles={{ content: { color: '#f5222d' } }}
                   />
                 </Card>
               </Col>
@@ -272,14 +273,16 @@ export default function AnalyticsPage() {
                 <Card>
                   <Statistic
                     title="Баланс"
-                    value={parseFloat(overview.netBalance)}
+                    value={parseFloat(overview.netBalance || '0') || 0}
                     precision={2}
                     suffix="₽"
-                    valueStyle={{
-                      color:
-                        parseFloat(overview.netBalance) >= 0
-                          ? '#52c41a'
-                          : '#f5222d',
+                    styles={{
+                      content: {
+                        color:
+                          parseFloat(overview.netBalance || '0') >= 0
+                            ? '#52c41a'
+                            : '#f5222d',
+                      },
                     }}
                   />
                 </Card>
@@ -587,13 +590,13 @@ export default function AnalyticsPage() {
                   </Col>
                   <Col xs={24} lg={12}>
                     <Card title="Статистика портфеля">
-                      <Space direction="vertical" style={{ width: '100%' }} size="large">
+                      <Space orientation="vertical" style={{ width: '100%' }} size="large">
                         <Statistic
                           title="Общая стоимость"
                           value={parseFloat(portfolio.totalValue)}
                           precision={2}
                           suffix="₽"
-                          valueStyle={{ color: '#1890ff' }}
+                          styles={{ content: { color: '#1890ff' } }}
                         />
                         <Statistic
                           title="Общая стоимость покупки"
@@ -603,14 +606,16 @@ export default function AnalyticsPage() {
                         />
                         <Statistic
                           title="Прибыль/Убыток"
-                          value={parseFloat(portfolio.profitLoss)}
+                          value={parseFloat(portfolio.profitLoss || '0') || 0}
                           precision={2}
                           suffix="₽"
-                          valueStyle={{
-                            color:
-                              parseFloat(portfolio.profitLoss) >= 0
-                                ? '#52c41a'
-                                : '#f5222d',
+                          styles={{
+                            content: {
+                              color:
+                                parseFloat(portfolio.profitLoss || '0') >= 0
+                                  ? '#52c41a'
+                                  : '#f5222d',
+                            },
                           }}
                         />
                         <Statistic
@@ -618,11 +623,13 @@ export default function AnalyticsPage() {
                           value={portfolio.profitLossPercentage}
                           precision={2}
                           suffix="%"
-                          valueStyle={{
-                            color:
-                              portfolio.profitLossPercentage >= 0
-                                ? '#52c41a'
-                                : '#f5222d',
+                          styles={{
+                            content: {
+                              color:
+                                portfolio.profitLossPercentage >= 0
+                                  ? '#52c41a'
+                                  : '#f5222d',
+                            },
                           }}
                         />
                       </Space>
@@ -635,29 +642,34 @@ export default function AnalyticsPage() {
               {categoryData.length > 0 && (
                 <Card title="Детализация по категориям">
                   <Row gutter={[16, 16]}>
-                    {categoryData.map((item, index) => (
-                      <Col xs={24} sm={12} md={8} lg={6} key={item.category}>
-                        <Card size="small">
-                          <Statistic
-                            title={item.category}
-                            value={parseFloat(item.total)}
-                            precision={2}
-                            suffix="₽"
-                            prefix={parseFloat(item.total) < 0 ? '-' : ''}
-                            valueStyle={{
-                              color:
-                                parseFloat(item.total) < 0
-                                  ? '#f5222d'
-                                  : '#52c41a',
-                              fontSize: '16px',
-                            }}
-                          />
-                          <div style={{ marginTop: 8, color: '#999' }}>
-                            Транзакций: {item.count}
-                          </div>
-                        </Card>
-                      </Col>
-                    ))}
+                    {categoryData.map((item, index) => {
+                      const totalValue = parseFloat(item.total || '0') || 0;
+                      return (
+                        <Col xs={24} sm={12} md={8} lg={6} key={item.category || index}>
+                          <Card size="small">
+                            <Statistic
+                              title={item.category}
+                              value={totalValue}
+                              precision={2}
+                              suffix="₽"
+                              prefix={totalValue < 0 ? '-' : ''}
+                              styles={{
+                                content: {
+                                  color:
+                                    totalValue < 0
+                                      ? '#f5222d'
+                                      : '#52c41a',
+                                  fontSize: '16px',
+                                },
+                              }}
+                            />
+                            <div style={{ marginTop: 8, color: '#999' }}>
+                              Транзакций: {item.count || 0}
+                            </div>
+                          </Card>
+                        </Col>
+                      );
+                    })}
                   </Row>
                 </Card>
               )}

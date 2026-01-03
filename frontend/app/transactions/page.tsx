@@ -17,7 +17,7 @@ import {
 	Radio,
 	DatePicker,
 	Popconfirm,
-	message,
+	App,
 	Tag,
 	Row,
 	Col,
@@ -83,6 +83,7 @@ const CATEGORIES = [
 ];
 
 export default function TransactionsPage() {
+	const { message } = App.useApp();
 	const [transactions, setTransactions] = useState<Transaction[]>([]);
 	const [wallets, setWallets] = useState<Wallet[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -347,7 +348,7 @@ export default function TransactionsPage() {
 	return (
 		<ProtectedRoute>
 			<MainLayout>
-				<Space direction='vertical' size='large' style={{ width: '100%' }}>
+				<Space orientation='vertical' size='large' style={{ width: '100%' }}>
 					<Row justify='space-between' align='middle'>
 						<Col>
 							<Title level={2}>

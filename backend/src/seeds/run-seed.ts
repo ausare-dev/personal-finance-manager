@@ -2,6 +2,7 @@ import { DataSource } from 'typeorm';
 import dataSource from '../../data-source';
 import { seedDatabase } from './initial-seed';
 import { seedEducation } from './education-seed';
+import { seedDemoData } from './demo-seed';
 
 async function runSeed() {
   try {
@@ -10,6 +11,7 @@ async function runSeed() {
 
     await seedDatabase(dataSource);
     await seedEducation(dataSource);
+    await seedDemoData(dataSource);
 
     await dataSource.destroy();
     console.log('Seed completed successfully');

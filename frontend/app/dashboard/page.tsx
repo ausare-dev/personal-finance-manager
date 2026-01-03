@@ -145,7 +145,7 @@ export default function DashboardPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <div>
             <Title level={2}>Добро пожаловать, {user?.email}!</Title>
           </div>
@@ -159,7 +159,7 @@ export default function DashboardPage() {
                   value={overview?.totalIncome || 0}
                   precision={2}
                   prefix={<ArrowUpOutlined style={{ color: '#52c41a' }} />}
-                  valueStyle={{ color: '#52c41a' }}
+                  styles={{ content: { color: '#52c41a' } }}
                   suffix="₽"
                 />
               </Card>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
                   value={overview?.totalExpense || 0}
                   precision={2}
                   prefix={<ArrowDownOutlined style={{ color: '#ff4d4f' }} />}
-                  valueStyle={{ color: '#ff4d4f' }}
+                  styles={{ content: { color: '#ff4d4f' } }}
                   suffix="₽"
                 />
               </Card>
@@ -183,11 +183,13 @@ export default function DashboardPage() {
                   value={overview?.netBalance || 0}
                   precision={2}
                   prefix={<DollarOutlined />}
-                  valueStyle={{
-                    color:
-                      parseFloat(overview?.netBalance || '0') >= 0
-                        ? '#52c41a'
-                        : '#ff4d4f',
+                  styles={{
+                    content: {
+                      color:
+                        parseFloat(overview?.netBalance || '0') >= 0
+                          ? '#52c41a'
+                          : '#ff4d4f',
+                    },
                   }}
                   suffix="₽"
                 />
@@ -222,7 +224,7 @@ export default function DashboardPage() {
                 {wallets.length === 0 ? (
                   <Empty description="Нет кошельков" />
                 ) : (
-                  <Space direction="vertical" style={{ width: '100%' }}>
+                  <Space orientation="vertical" style={{ width: '100%' }}>
                     {wallets.map((wallet) => (
                       <Card
                         key={wallet.id}

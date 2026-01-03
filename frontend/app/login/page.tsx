@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Form, Input, Button, Card, Typography, message } from 'antd';
-import { UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Card, Typography, App, Divider } from 'antd';
+import { UserOutlined, LockOutlined, ExperimentOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import type { LoginRequest } from '@/types';
@@ -28,6 +28,7 @@ const loginSchema = yup.object({
 export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
 
   const {
@@ -55,6 +56,21 @@ export default function LoginPage() {
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message || 'Ошибка при входе. Проверьте данные.';
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDemoLogin = async () => {
+    try {
+      setLoading(true);
+      await login({ email: 'demo@example.com', password: 'demo123' });
+      message.success('Добро пожаловать в демо-режим!');
+      router.push('/dashboard');
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message || 'Ошибка при входе в демо-режим.';
       message.error(errorMessage);
     } finally {
       setLoading(false);
@@ -141,7 +157,7 @@ export default function LoginPage() {
             </Button>
           </Form.Item>
 
-          <div style={{ textAlign: 'center' }}>
+          <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <Text type="secondary">
               Нет аккаунта?{' '}
               <Link href="/register" style={{ color: '#1890ff' }}>
@@ -149,6 +165,25 @@ export default function LoginPage() {
               </Link>
             </Text>
           </div>
+
+          <Divider style={{ margin: '16px 0' }}>или</Divider>
+
+          <Form.Item style={{ marginBottom: 0 }}>
+            <Button
+              type="default"
+              size="large"
+              block
+              icon={<ExperimentOutlined />}
+              onClick={handleDemoLogin}
+              loading={loading}
+              style={{ borderColor: '#52c41a', color: '#52c41a' }}
+            >
+              Войти в демо-режим
+            </Button>
+            <Text type="secondary" style={{ fontSize: '12px', display: 'block', textAlign: 'center', marginTop: 8 }}>
+              Попробуйте приложение с демо-данными
+            </Text>
+          </Form.Item>
         </form>
       </Card>
     </div>

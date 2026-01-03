@@ -14,7 +14,7 @@ import {
   DatePicker,
   Input,
   Popconfirm,
-  message,
+  App,
   Tag,
   Row,
   Col,
@@ -87,6 +87,7 @@ const COLORS = [
 ];
 
 export default function InvestmentsPage() {
+  const { message } = App.useApp();
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -267,7 +268,7 @@ export default function InvestmentsPage() {
         const isProfit = profitLoss >= 0;
 
         return (
-          <Space direction="vertical" size={0}>
+          <Space orientation="vertical" size={0}>
             <Tag
               color={isProfit ? 'success' : 'error'}
               icon={isProfit ? <ArrowUpOutlined /> : <ArrowDownOutlined />}
@@ -317,7 +318,7 @@ export default function InvestmentsPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Row justify="space-between" align="middle">
             <Col>
               <Title level={2}>
@@ -345,7 +346,7 @@ export default function InvestmentsPage() {
                     value={parseFloat(portfolio.totalValue)}
                     precision={2}
                     suffix="₽"
-                    valueStyle={{ color: '#1890ff' }}
+                    styles={{ content: { color: '#1890ff' } }}
                   />
                 </Card>
               </Col>
@@ -366,11 +367,13 @@ export default function InvestmentsPage() {
                     value={parseFloat(portfolio.profitLoss)}
                     precision={2}
                     suffix="₽"
-                    valueStyle={{
-                      color:
-                        parseFloat(portfolio.profitLoss) >= 0
-                          ? '#52c41a'
-                          : '#f5222d',
+                    styles={{
+                      content: {
+                        color:
+                          parseFloat(portfolio.profitLoss) >= 0
+                            ? '#52c41a'
+                            : '#f5222d',
+                      },
                     }}
                     prefix={
                       parseFloat(portfolio.profitLoss) >= 0 ? (
@@ -389,11 +392,13 @@ export default function InvestmentsPage() {
                     value={portfolio.profitLossPercentage}
                     precision={2}
                     suffix="%"
-                    valueStyle={{
-                      color:
-                        portfolio.profitLossPercentage >= 0
-                          ? '#52c41a'
-                          : '#f5222d',
+                    styles={{
+                      content: {
+                        color:
+                          portfolio.profitLossPercentage >= 0
+                            ? '#52c41a'
+                            : '#f5222d',
+                      },
                     }}
                   />
                 </Card>

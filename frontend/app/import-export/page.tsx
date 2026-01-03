@@ -9,7 +9,7 @@ import {
   Button,
   Space,
   Upload,
-  message,
+  App,
   Row,
   Col,
   Alert,
@@ -33,6 +33,7 @@ const { Title, Text } = Typography;
 const { Dragger } = Upload;
 
 export default function ImportExportPage() {
+  const { message } = App.useApp();
   const [csvUploading, setCsvUploading] = useState(false);
   const [excelUploading, setExcelUploading] = useState(false);
   const [csvExporting, setCsvExporting] = useState(false);
@@ -161,7 +162,7 @@ export default function ImportExportPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Title level={2}>Импорт и экспорт транзакций</Title>
 
           <Row gutter={[16, 16]}>
@@ -175,7 +176,7 @@ export default function ImportExportPage() {
                   </Space>
                 }
               >
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                   <Text type="secondary">
                     Загрузите CSV файл с транзакциями. Файл должен содержать
                     колонки: amount, type, category, date, walletId (опционально:
@@ -213,7 +214,7 @@ export default function ImportExportPage() {
                   </Space>
                 }
               >
-                <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                   <Text type="secondary">
                     Загрузите Excel файл (XLSX или XLS) с транзакциями. Файл
                     должен содержать колонки: amount, type, category, date,
@@ -245,7 +246,7 @@ export default function ImportExportPage() {
           {/* Результаты импорта */}
           {importResult && (
             <Card title="Результаты импорта">
-              <Space direction="vertical" style={{ width: '100%' }} size="middle">
+              <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <Row gutter={[16, 16]}>
                   <Col xs={24} sm={12}>
                     <Alert
@@ -313,7 +314,7 @@ export default function ImportExportPage() {
 
           {/* Экспорт */}
           <Card title="Экспорт транзакций">
-            <Space direction="vertical" style={{ width: '100%' }} size="large">
+            <Space orientation="vertical" style={{ width: '100%' }} size="large">
               <Text type="secondary">
                 Экспортируйте все ваши транзакции в CSV или Excel формат для
                 дальнейшего анализа или резервного копирования.
@@ -328,7 +329,7 @@ export default function ImportExportPage() {
                       border: '1px dashed #d9d9d9',
                     }}
                   >
-                    <Space direction="vertical" size="middle">
+                    <Space orientation="vertical" size="middle">
                       <FileTextOutlined
                         style={{ fontSize: '48px', color: '#1890ff' }}
                       />
@@ -357,7 +358,7 @@ export default function ImportExportPage() {
                       border: '1px dashed #d9d9d9',
                     }}
                   >
-                    <Space direction="vertical" size="middle">
+                    <Space orientation="vertical" size="middle">
                       <FileExcelOutlined
                         style={{ fontSize: '48px', color: '#52c41a' }}
                       />

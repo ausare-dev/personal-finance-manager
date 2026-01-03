@@ -99,7 +99,7 @@ export default function EducationPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Row justify="space-between" align="middle">
             <Col>
               <Title level={2}>
@@ -112,7 +112,7 @@ export default function EducationPage() {
           <Card>
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={8}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space orientation="vertical" style={{ width: '100%' }} size="small">
                   <Text strong>Категория:</Text>
                   <Select
                     value={selectedCategory}
@@ -129,7 +129,7 @@ export default function EducationPage() {
                 </Space>
               </Col>
               <Col xs={24} sm={12} md={16}>
-                <Space direction="vertical" style={{ width: '100%' }} size="small">
+                <Space orientation="vertical" style={{ width: '100%' }} size="small">
                   <Text strong>Поиск:</Text>
                   <Search
                     placeholder="Поиск по названию или содержимому..."
@@ -172,7 +172,7 @@ export default function EducationPage() {
                         </Space>,
                       ]}
                     >
-                      <Space direction="vertical" style={{ width: '100%' }} size="small">
+                      <Space orientation="vertical" style={{ width: '100%' }} size="small">
                         <Tag color="blue">{article.category}</Tag>
                         <Title level={4} style={{ margin: 0 }}>
                           {article.title}
@@ -183,7 +183,7 @@ export default function EducationPage() {
                         >
                           {article.content}
                         </Paragraph>
-                        <Space split={<span>•</span>}>
+                        <Space separator={<span>•</span>}>
                           <Text type="secondary" style={{ fontSize: '12px' }}>
                             <EyeOutlined /> {article.readCount}
                           </Text>

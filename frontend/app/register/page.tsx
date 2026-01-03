@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Form, Input, Button, Card, Typography, message } from 'antd';
+import { Form, Input, Button, Card, Typography, App } from 'antd';
 import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
@@ -40,6 +40,7 @@ interface RegisterFormData extends RegisterRequest {
 export default function RegisterPage() {
   const router = useRouter();
   const { register: registerUser, isAuthenticated, isLoading: authLoading } = useAuth();
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(false);
 
   const {

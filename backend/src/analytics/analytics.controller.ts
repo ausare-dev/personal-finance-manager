@@ -8,23 +8,39 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) {}
 
   @Get('overview')
-  getOverview(@CurrentUser() user: { id: string }) {
-    return this.analyticsService.getOverview(user.id);
+  async getOverview(@CurrentUser() user: { id: string }) {
+    const overview = await this.analyticsService.getOverview(user.id);
+    // Transform to match frontend expectations
+    return {
+      totalIncome: overview.totalIncome.toString(),
+      totalExpense: overview.totalExpense.toString(),
+      netBalance: overview.netAmount.toString(),
+      walletCount: overview.totalWallets,
+      transactionCount: overview.transactionsCount,
+    };
   }
 
   @Get('income-expense')
-  getIncomeExpense(
+  async getIncomeExpense(
     @CurrentUser() user: { id: string },
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('groupBy') groupBy: 'day' | 'week' | 'month' = 'day',
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.analyticsService.getIncomeExpense(user.id, start, end);
+    const data = await this.analyticsService.getIncomeExpense(user.id, start, end, groupBy);
+    // Transform to match frontend expectations
+    return data.map(item => ({
+      period: item.period,
+      income: item.income.toString(),
+      expense: item.expense.toString(),
+      net: item.net.toString(),
+    }));
   }
 
   @Get('by-category')
-  getByCategory(
+  async getByCategory(
     @CurrentUser() user: { id: string },
     @Query('type') type?: TransactionType,
     @Query('startDate') startDate?: string,
@@ -32,7 +48,13 @@ export class AnalyticsController {
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    return this.analyticsService.getByCategory(user.id, type, start, end);
+    const categories = await this.analyticsService.getByCategory(user.id, type, start, end);
+    // Transform to match frontend expectations
+    return categories.map(item => ({
+      category: item.category,
+      total: item.totalAmount.toString(),
+      count: item.transactionCount,
+    }));
   }
 
   @Get('trends')

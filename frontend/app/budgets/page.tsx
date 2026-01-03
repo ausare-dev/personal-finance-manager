@@ -13,7 +13,7 @@ import {
   InputNumber,
   Select,
   Popconfirm,
-  message,
+  App,
   Tag,
   Row,
   Col,
@@ -68,6 +68,7 @@ const PERIODS: { value: BudgetPeriod; label: string }[] = [
 ];
 
 export default function BudgetsPage() {
+  const { message } = App.useApp();
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -200,7 +201,7 @@ export default function BudgetsPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Row justify="space-between" align="middle">
             <Col>
               <Title level={2}>
@@ -246,7 +247,7 @@ export default function BudgetsPage() {
                 <Statistic
                   title="Превышено"
                   value={exceededBudgets}
-                  valueStyle={{ color: exceededBudgets > 0 ? '#ff4d4f' : '#52c41a' }}
+                  styles={{ content: { color: exceededBudgets > 0 ? '#ff4d4f' : '#52c41a' } }}
                   prefix={<WarningOutlined />}
                 />
               </Card>
@@ -267,8 +268,10 @@ export default function BudgetsPage() {
                   title="Использовано"
                   value={totalUsed}
                   precision={2}
-                  valueStyle={{
-                    color: totalUsed > totalLimit ? '#ff4d4f' : '#52c41a',
+                  styles={{
+                    content: {
+                      color: totalUsed > totalLimit ? '#ff4d4f' : '#52c41a',
+                    },
                   }}
                   suffix="₽"
                 />
@@ -329,7 +332,7 @@ export default function BudgetsPage() {
                         </Space>
                       }
                     >
-                      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                      <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                         {/* Progress Bar */}
                         <div>
                           <div

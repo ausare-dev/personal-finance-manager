@@ -11,6 +11,7 @@ export interface AnalyticsFilters {
   startDate?: string;
   endDate?: string;
   groupBy?: 'day' | 'week' | 'month';
+  type?: 'income' | 'expense';
 }
 
 export const analyticsService = {

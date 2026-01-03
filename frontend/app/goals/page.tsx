@@ -13,7 +13,7 @@ import {
   InputNumber,
   DatePicker,
   Popconfirm,
-  message,
+  App,
   Tag,
   Row,
   Col,
@@ -43,7 +43,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { goalsService } from '@/services/goals.service';
-import type { Goal, CreateGoalDto } from '@/types';
+import type { Goal, CreateGoalDto, UpdateGoalDto } from '@/types';
 
 const { Title, Text } = Typography;
 
@@ -67,6 +67,7 @@ const goalSchema = yup.object({
 });
 
 export default function GoalsPage() {
+  const { message } = App.useApp();
   const [goals, setGoals] = useState<Goal[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
@@ -134,25 +135,55 @@ export default function GoalsPage() {
         return;
       }
 
-      const submitData: CreateGoalDto = {
-        name: data.name,
-        targetAmount: data.targetAmount,
-        currentAmount: data.currentAmount,
-        deadline: data.deadline.toISOString(),
-        interestRate: data.interestRate || 0,
-      };
+      // Проверка, что текущая сумма не превышает целевую
+      if (data.currentAmount && data.currentAmount > data.targetAmount) {
+        message.error('Текущая сумма не может превышать целевую сумму');
+        return;
+      }
+
+      // Проверка, что дедлайн в будущем
+      // data.deadline уже проверен на null выше, поэтому можно безопасно работать с ним
+      // Преобразуем в Dayjs объект (оборачиваем в dayjs() для гарантии)
+      const deadlineDayjs = dayjs(data.deadline);
+      const deadlineDate = deadlineDayjs.toDate();
+      const now = dayjs().toDate();
+      // Добавляем 1 минуту к текущему времени для учета времени выполнения
+      const nowPlusMinute = new Date(now.getTime() + 60000);
+      if (deadlineDate <= nowPlusMinute) {
+        message.error('Дедлайн должен быть в будущем');
+        return;
+      }
 
       if (editingGoal) {
-        await goalsService.update(editingGoal.id, submitData);
+        // При обновлении используем UpdateGoalDto (все поля опциональные)
+        const updateData: UpdateGoalDto = {
+          name: data.name,
+          targetAmount: data.targetAmount,
+          currentAmount: data.currentAmount,
+          deadline: deadlineDayjs.toISOString(),
+          interestRate: data.interestRate || 0,
+        };
+        await goalsService.update(editingGoal.id, updateData);
         message.success('Цель обновлена');
       } else {
-        await goalsService.create(submitData);
+        // При создании используем CreateGoalDto
+        // deadlineDayjs уже определен выше
+        const createData: CreateGoalDto = {
+          name: data.name,
+          targetAmount: data.targetAmount,
+          currentAmount: data.currentAmount,
+          deadline: deadlineDayjs.toISOString(),
+          interestRate: data.interestRate || 0,
+        };
+        await goalsService.create(createData);
         message.success('Цель создана');
       }
       setModalVisible(false);
+      setEditingGoal(null);
       reset();
       loadGoals();
     } catch (error: any) {
+      console.error('Error saving goal:', error);
       const errorMessage =
         error?.response?.data?.message || 'Ошибка при сохранении цели';
       message.error(errorMessage);
@@ -246,7 +277,7 @@ export default function GoalsPage() {
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Row justify="space-between" align="middle">
             <Col>
               <Title level={2}>
@@ -280,7 +311,7 @@ export default function GoalsPage() {
                 <Statistic
                   title="Выполнено"
                   value={completedGoals}
-                  valueStyle={{ color: '#52c41a' }}
+                  styles={{ content: { color: '#52c41a' } }}
                   prefix={<CheckCircleOutlined />}
                 />
               </Card>
@@ -303,8 +334,10 @@ export default function GoalsPage() {
                   value={averageProgress}
                   precision={1}
                   suffix="%"
-                  valueStyle={{
-                    color: averageProgress >= 50 ? '#52c41a' : '#1890ff',
+                  styles={{
+                    content: {
+                      color: averageProgress >= 50 ? '#52c41a' : '#1890ff',
+                    },
                   }}
                 />
               </Card>
@@ -375,7 +408,7 @@ export default function GoalsPage() {
                         </Space>
                       }
                     >
-                      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+                      <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                         {/* Progress Bar */}
                         <div>
                           <div
