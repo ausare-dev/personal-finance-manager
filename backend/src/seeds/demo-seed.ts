@@ -342,6 +342,358 @@ export async function seedDemoData(dataSource: DataSource): Promise<void> {
     },
   );
 
+  // Fresh transactions - December 2025
+  transactions.push(
+    // December Income
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 150000,
+      type: TransactionType.INCOME,
+      category: 'Зарплата',
+      tags: ['работа', 'зарплата', 'основной доход'],
+      description: 'Зарплата за декабрь',
+      date: new Date(2025, 11, 5), // December 5, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 18000,
+      type: TransactionType.INCOME,
+      category: 'Фриланс',
+      tags: ['работа', 'фриланс', 'дополнительный доход'],
+      description: 'Разработка мобильного приложения',
+      date: new Date(2025, 11, 12), // December 12, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: usdWallet.id,
+      amount: 300,
+      type: TransactionType.INCOME,
+      category: 'Инвестиции',
+      tags: ['инвестиции', 'дивиденды'],
+      description: 'Дивиденды по портфелю',
+      date: new Date(2025, 11, 18), // December 18, 2025
+    },
+    // December Expenses - Food
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 9800,
+      type: TransactionType.EXPENSE,
+      category: 'Продукты',
+      tags: ['еда', 'покупки', 'продукты'],
+      description: 'Продукты на неделю',
+      date: new Date(2025, 11, 2), // December 2, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 11000,
+      type: TransactionType.EXPENSE,
+      category: 'Продукты',
+      tags: ['еда', 'покупки', 'продукты', 'новогодние'],
+      description: 'Новогодние продукты',
+      date: new Date(2025, 11, 28), // December 28, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 1500,
+      type: TransactionType.EXPENSE,
+      category: 'Кафе и рестораны',
+      tags: ['еда', 'ресторан', 'развлечения'],
+      description: 'Корпоративный ужин',
+      date: new Date(2025, 11, 15), // December 15, 2025
+    },
+    // December Expenses - Transport
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 2500,
+      type: TransactionType.EXPENSE,
+      category: 'Транспорт',
+      tags: ['транспорт', 'проездной'],
+      description: 'Проездной на декабрь',
+      date: new Date(2025, 11, 1), // December 1, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 550,
+      type: TransactionType.EXPENSE,
+      category: 'Транспорт',
+      tags: ['транспорт', 'такси'],
+      description: 'Поездка на такси в аэропорт',
+      date: new Date(2025, 11, 22), // December 22, 2025
+    },
+    // December Expenses - Utilities
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 4800,
+      type: TransactionType.EXPENSE,
+      category: 'Коммунальные услуги',
+      tags: ['коммунальные', 'квартплата'],
+      description: 'Квартплата за декабрь',
+      date: new Date(2025, 11, 3), // December 3, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 1200,
+      type: TransactionType.EXPENSE,
+      category: 'Коммунальные услуги',
+      tags: ['коммунальные', 'интернет'],
+      description: 'Интернет за декабрь',
+      date: new Date(2025, 11, 5), // December 5, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 850,
+      type: TransactionType.EXPENSE,
+      category: 'Коммунальные услуги',
+      tags: ['коммунальные', 'мобильная связь'],
+      description: 'Мобильная связь',
+      date: new Date(2025, 11, 7), // December 7, 2025
+    },
+    // December Expenses - Shopping
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 12000,
+      type: TransactionType.EXPENSE,
+      category: 'Одежда',
+      tags: ['покупки', 'одежда', 'новый год'],
+      description: 'Новогодний наряд',
+      date: new Date(2025, 11, 20), // December 20, 2025
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 25000,
+      type: TransactionType.EXPENSE,
+      category: 'Подарки',
+      tags: ['покупки', 'подарки', 'новый год'],
+      description: 'Новогодние подарки',
+      date: new Date(2025, 11, 27), // December 27, 2025
+    },
+    // December Expenses - Entertainment
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 4500,
+      type: TransactionType.EXPENSE,
+      category: 'Развлечения',
+      tags: ['развлечения', 'новый год', 'вечеринка'],
+      description: 'Новогодняя вечеринка',
+      date: new Date(2025, 11, 31), // December 31, 2025
+    },
+  );
+
+  // Fresh transactions - January 2026 (up to 18.01.2026)
+  transactions.push(
+    // January Income
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 150000,
+      type: TransactionType.INCOME,
+      category: 'Зарплата',
+      tags: ['работа', 'зарплата', 'основной доход'],
+      description: 'Зарплата за январь',
+      date: new Date(2026, 0, 5), // January 5, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 15000,
+      type: TransactionType.INCOME,
+      category: 'Фриланс',
+      tags: ['работа', 'фриланс', 'дополнительный доход'],
+      description: 'Консультация по разработке',
+      date: new Date(2026, 0, 10), // January 10, 2026
+    },
+    // January Expenses - Food
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 8700,
+      type: TransactionType.EXPENSE,
+      category: 'Продукты',
+      tags: ['еда', 'покупки', 'продукты'],
+      description: 'Продукты на неделю',
+      date: new Date(2026, 0, 3), // January 3, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 9500,
+      type: TransactionType.EXPENSE,
+      category: 'Продукты',
+      tags: ['еда', 'покупки', 'продукты'],
+      description: 'Продукты',
+      date: new Date(2026, 0, 14), // January 14, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 1200,
+      type: TransactionType.EXPENSE,
+      category: 'Кафе и рестораны',
+      tags: ['еда', 'кафе', 'кофе'],
+      description: 'Кофе и завтрак',
+      date: new Date(2026, 0, 8), // January 8, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 1800,
+      type: TransactionType.EXPENSE,
+      category: 'Кафе и рестораны',
+      tags: ['еда', 'ресторан', 'встреча'],
+      description: 'Встреча с клиентом в ресторане',
+      date: new Date(2026, 0, 12), // January 12, 2026
+    },
+    // January Expenses - Transport
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 2500,
+      type: TransactionType.EXPENSE,
+      category: 'Транспорт',
+      tags: ['транспорт', 'проездной'],
+      description: 'Проездной на январь',
+      date: new Date(2026, 0, 2), // January 2, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 400,
+      type: TransactionType.EXPENSE,
+      category: 'Транспорт',
+      tags: ['транспорт', 'бензин'],
+      description: 'Заправка автомобиля',
+      date: new Date(2026, 0, 6), // January 6, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 480,
+      type: TransactionType.EXPENSE,
+      category: 'Транспорт',
+      tags: ['транспорт', 'такси'],
+      description: 'Поездка на такси',
+      date: new Date(2026, 0, 16), // January 16, 2026
+    },
+    // January Expenses - Utilities
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 4700,
+      type: TransactionType.EXPENSE,
+      category: 'Коммунальные услуги',
+      tags: ['коммунальные', 'квартплата'],
+      description: 'Квартплата за январь',
+      date: new Date(2026, 0, 4), // January 4, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 1200,
+      type: TransactionType.EXPENSE,
+      category: 'Коммунальные услуги',
+      tags: ['коммунальные', 'интернет'],
+      description: 'Интернет за январь',
+      date: new Date(2026, 0, 6), // January 6, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 900,
+      type: TransactionType.EXPENSE,
+      category: 'Коммунальные услуги',
+      tags: ['коммунальные', 'мобильная связь'],
+      description: 'Мобильная связь',
+      date: new Date(2026, 0, 7), // January 7, 2026
+    },
+    // January Expenses - Health
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 3500,
+      type: TransactionType.EXPENSE,
+      category: 'Здоровье',
+      tags: ['здоровье', 'медицина', 'анализы'],
+      description: 'Медицинские анализы',
+      date: new Date(2026, 0, 9), // January 9, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 2800,
+      type: TransactionType.EXPENSE,
+      category: 'Здоровье',
+      tags: ['здоровье', 'лекарства'],
+      description: 'Покупка лекарств',
+      date: new Date(2026, 0, 11), // January 11, 2026
+    },
+    // January Expenses - Shopping
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 15000,
+      type: TransactionType.EXPENSE,
+      category: 'Электроника',
+      tags: ['покупки', 'электроника', 'телефон'],
+      description: 'Замена аккумулятора телефона',
+      date: new Date(2026, 0, 13), // January 13, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 5500,
+      type: TransactionType.EXPENSE,
+      category: 'Одежда',
+      tags: ['покупки', 'одежда'],
+      description: 'Зимняя обувь',
+      date: new Date(2026, 0, 15), // January 15, 2026
+    },
+    // January Expenses - Entertainment
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 2800,
+      type: TransactionType.EXPENSE,
+      category: 'Развлечения',
+      tags: ['развлечения', 'кино'],
+      description: 'Поход в кино',
+      date: new Date(2026, 0, 7), // January 7, 2026
+    },
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 3200,
+      type: TransactionType.EXPENSE,
+      category: 'Развлечения',
+      tags: ['развлечения', 'книги'],
+      description: 'Покупка книг',
+      date: new Date(2026, 0, 17), // January 17, 2026
+    },
+    // January Expenses - Education
+    {
+      userId: demoUser.id,
+      walletId: rubWallet.id,
+      amount: 12000,
+      type: TransactionType.EXPENSE,
+      category: 'Образование',
+      tags: ['образование', 'курсы'],
+      description: 'Онлайн курс по программированию',
+      date: new Date(2026, 0, 5), // January 5, 2026
+    },
+  );
+
   // Save all transactions
   for (const transactionData of transactions) {
     const transaction = transactionRepository.create(transactionData);
