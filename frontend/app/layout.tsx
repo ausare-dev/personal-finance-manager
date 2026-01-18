@@ -1,50 +1,36 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next';
 import { AntdRegistry } from '@ant-design/nextjs-registry';
-import { ConfigProvider, App as AntdApp } from 'antd';
-import ruRU from 'antd/locale/ru_RU';
+import { App as AntdApp } from 'antd';
 import { AuthProvider } from '../contexts/AuthContext';
 import { AppProvider } from '../contexts/AppContext';
+import { ThemeProvider } from '../components/ThemeProvider';
 import { FixResponsiveObserver } from './fix-responsive-observer';
-import "./globals.css";
+import './globals.css';
 
 export const metadata: Metadata = {
-  title: "Персональный финансовый менеджер",
-  description: "Управление личными финансами",
+	title: 'Персональный финансовый менеджер',
+	description: 'Управление личными финансами',
 };
 
 export default function RootLayout({
-  children,
+	children,
 }: Readonly<{
-  children: React.ReactNode;
+	children: React.ReactNode;
 }>) {
-  return (
-    <html lang="ru">
-      <body>
-        <AntdRegistry>
-          <FixResponsiveObserver />
-          <ConfigProvider
-            locale={ruRU}
-            theme={{
-              token: {
-                colorPrimary: '#1890ff',
-                borderRadius: 6,
-              },
-            }}
-            componentSize="large"
-            button={{
-              autoInsertSpace: false,
-            }}
-          >
-            <AntdApp>
-              <AppProvider>
-                <AuthProvider>
-                  {children}
-                </AuthProvider>
-              </AppProvider>
-            </AntdApp>
-          </ConfigProvider>
-        </AntdRegistry>
-      </body>
-    </html>
-  );
+	return (
+		<html lang='ru'>
+			<body>
+				<AntdRegistry>
+					<FixResponsiveObserver />
+					<AppProvider>
+						<ThemeProvider>
+							<AntdApp>
+								<AuthProvider>{children}</AuthProvider>
+							</AntdApp>
+						</ThemeProvider>
+					</AppProvider>
+				</AntdRegistry>
+			</body>
+		</html>
+	);
 }

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { App as AntdApp } from 'antd';
 
 interface AppContextType {
   // Состояние загрузки для глобальных операций
@@ -12,7 +11,7 @@ interface AppContextType {
   theme: 'light' | 'dark';
   setTheme: (theme: 'light' | 'dark') => void;
 
-  // Уведомления
+  // Уведомления (будет использовать AntdApp.useApp() внутри компонентов)
   showNotification: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
@@ -21,7 +20,6 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [theme, setThemeState] = useState<'light' | 'dark'>('light');
-  const { message } = AntdApp.useApp();
 
   // Загружаем тему из localStorage при инициализации
   React.useEffect(() => {
@@ -29,10 +27,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const savedTheme = localStorage.getItem('theme') as 'light' | 'dark' | null;
       if (savedTheme) {
         setThemeState(savedTheme);
+        document.documentElement.setAttribute('data-theme', savedTheme);
       } else {
         // Определяем тему из системных настроек
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setThemeState(prefersDark ? 'dark' : 'light');
+        const initialTheme = prefersDark ? 'dark' : 'light';
+        setThemeState(initialTheme);
+        document.documentElement.setAttribute('data-theme', initialTheme);
       }
     }
   }, []);
@@ -42,7 +43,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setThemeState(newTheme);
     if (typeof window !== 'undefined') {
       localStorage.setItem('theme', newTheme);
-      // Применяем тему к документу (если нужно)
+      // Применяем тему к документу
       document.documentElement.setAttribute('data-theme', newTheme);
     }
   };
@@ -52,14 +53,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsLoading(loading);
   };
 
-  // Показать уведомление через Ant Design message
+  // Показать уведомление (будет реализовано через AntdApp.useApp() в компонентах)
   const showNotification = (
     messageText: string,
     type: 'success' | 'error' | 'info' | 'warning' = 'info'
   ) => {
-    if (typeof window !== 'undefined' && message) {
-      message[type](messageText);
-    }
+    // Это будет использоваться через AntdApp.useApp() в компонентах
+    console.warn('showNotification called but AntdApp is not available at this level');
   };
 
   const value: AppContextType = {
