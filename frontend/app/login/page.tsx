@@ -111,7 +111,7 @@ export default function LoginPage() {
       >
         <div style={{ textAlign: 'center', marginBottom: 32 }}>
           <Title level={2}>Вход в систему</Title>
-          <Text type="secondary">Personal Finance Manager</Text>
+          <Text type="secondary">Персональный финансовый менеджер</Text>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>

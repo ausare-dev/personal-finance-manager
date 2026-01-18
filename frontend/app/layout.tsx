@@ -8,7 +8,7 @@ import { FixResponsiveObserver } from './fix-responsive-observer';
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Personal Finance Manager",
+  title: "Персональный финансовый менеджер",
   description: "Управление личными финансами",
 };
 
