@@ -160,7 +160,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 			key: 'profile',
 			icon: <UserOutlined />,
 			label: 'Профиль',
-			disabled: true, // Будет реализовано позже
 		},
 		{
 			type: 'divider',
@@ -174,7 +173,9 @@ export default function MainLayout({ children }: MainLayoutProps) {
 	];
 
 	const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
-		if (key === 'logout') {
+		if (key === 'profile') {
+			router.push('/profile');
+		} else if (key === 'logout') {
 			logout();
 		}
 	};

@@ -232,3 +232,19 @@ export interface Article {
   createdAt: string;
 }
 
+// Profile types
+export interface UserProfile {
+  id: string;
+  email: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface UpdateEmailDto {
+  email: string;
+}
+
+export interface UpdatePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+}

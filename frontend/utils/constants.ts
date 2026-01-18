@@ -4,6 +4,10 @@ export const API_ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
   },
+  PROFILE: {
+    BASE: '/profile',
+    PASSWORD: '/profile/password',
+  },
   WALLETS: {
     BASE: '/wallets',
     BY_ID: (id: string) => `/wallets/${id}`,
