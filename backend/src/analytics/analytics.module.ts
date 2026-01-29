@@ -16,4 +16,3 @@ import { TransactionsModule } from '../transactions/transactions.module';
   exports: [AnalyticsService],
 })
 export class AnalyticsModule {}
-

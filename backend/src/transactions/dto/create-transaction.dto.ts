@@ -40,4 +40,3 @@ export class CreateTransactionDto {
   @IsNotEmpty()
   date: string;
 }
-

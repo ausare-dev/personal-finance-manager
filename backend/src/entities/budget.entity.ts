@@ -43,4 +43,3 @@ export class Budget {
   @JoinColumn({ name: 'userId' })
   user: User;
 }
-

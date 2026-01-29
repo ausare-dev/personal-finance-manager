@@ -41,4 +41,3 @@ export class UpdateTransactionDto {
   @IsOptional()
   date?: string;
 }
-

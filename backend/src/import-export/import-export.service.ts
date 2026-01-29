@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import * as Papa from 'papaparse';
@@ -100,7 +96,11 @@ export class ImportExportService {
 
       try {
         // Валидация и преобразование данных
-        const transactionData = this.validateAndTransformRow(row, rowNumber, defaultWalletId);
+        const transactionData = this.validateAndTransformRow(
+          row,
+          rowNumber,
+          defaultWalletId,
+        );
 
         // Создать транзакцию
         await this.transactionsService.create(transactionData, userId);
@@ -109,13 +109,13 @@ export class ImportExportService {
         result.failed++;
         // Форматируем сообщение об ошибке для лучшей читаемости
         let errorMessage = 'Неизвестная ошибка';
-        
+
         if (error && typeof error === 'object') {
           // NestJS exceptions имеют свойство message
           if (error.message) {
             errorMessage = error.message;
           } else if (error.response && error.response.message) {
-            errorMessage = Array.isArray(error.response.message) 
+            errorMessage = Array.isArray(error.response.message)
               ? error.response.message.join(', ')
               : error.response.message;
           } else if (error.status && error.status === 404) {
@@ -126,35 +126,46 @@ export class ImportExportService {
         } else if (typeof error === 'string') {
           errorMessage = error;
         }
-        
+
         // Обработка ошибок PostgreSQL UUID
-        if (errorMessage.includes('invalid input syntax for type uuid') || 
-            errorMessage.includes('uuid')) {
-          errorMessage = 'ID кошелька должен быть в формате UUID. Убедитесь, что вы скопировали правильный ID кошелька со страницы "Кошельки" и заменили все вхождения "WALLET_ID_HERE" в файле.';
+        if (
+          errorMessage.includes('invalid input syntax for type uuid') ||
+          errorMessage.includes('uuid')
+        ) {
+          errorMessage =
+            'ID кошелька должен быть в формате UUID. Убедитесь, что вы скопировали правильный ID кошелька со страницы "Кошельки" и заменили все вхождения "WALLET_ID_HERE" в файле.';
         }
-        
+
         // Добавляем контекст для ошибок валидации walletId
-        if (errorMessage.includes('walletId') || 
-            errorMessage.includes('Wallet') || 
-            errorMessage.includes('not found') ||
-            errorMessage.includes('не найден') ||
-            errorMessage.includes('ID кошелька')) {
+        if (
+          errorMessage.includes('walletId') ||
+          errorMessage.includes('Wallet') ||
+          errorMessage.includes('not found') ||
+          errorMessage.includes('не найден') ||
+          errorMessage.includes('ID кошелька')
+        ) {
           // Не дублируем сообщение, если уже было обработано выше
           if (!errorMessage.includes('формате UUID')) {
             errorMessage = `Некорректный ID кошелька. Убедитесь, что используете существующий ID кошелька, принадлежащий вашему аккаунту. Детали: ${errorMessage}`;
           }
         }
-        
+
         // Добавляем контекст для ошибок валидации типа
-        if (errorMessage.includes('type must be') || errorMessage.includes('TransactionType')) {
+        if (
+          errorMessage.includes('type must be') ||
+          errorMessage.includes('TransactionType')
+        ) {
           errorMessage = `Некорректный тип транзакции. Используйте 'income' (доход) или 'expense' (расход). Детали: ${errorMessage}`;
         }
-        
+
         // Добавляем контекст для ошибок валидации суммы
-        if (errorMessage.includes('amount') || errorMessage.includes('number')) {
+        if (
+          errorMessage.includes('amount') ||
+          errorMessage.includes('number')
+        ) {
           errorMessage = `Некорректная сумма транзакции. Должно быть положительное число. Детали: ${errorMessage}`;
         }
-        
+
         result.errors.push({
           row: rowNumber,
           message: errorMessage,
@@ -168,7 +179,11 @@ export class ImportExportService {
   /**
    * Валидация и преобразование строки данных
    */
-  private validateAndTransformRow(row: any, rowNumber: number, defaultWalletId?: string): ImportTransactionDto {
+  private validateAndTransformRow(
+    row: any,
+    rowNumber: number,
+    defaultWalletId?: string,
+  ): ImportTransactionDto {
     // Нормализация названий колонок (case-insensitive)
     const normalizedRow: any = {};
     Object.keys(row).forEach((key) => {
@@ -176,30 +191,42 @@ export class ImportExportService {
     });
 
     // Извлечение полей
-    let walletId = normalizedRow.walletid || normalizedRow['wallet id'] || normalizedRow.wallet;
+    let walletId =
+      normalizedRow.walletid ||
+      normalizedRow['wallet id'] ||
+      normalizedRow.wallet;
     const amount = normalizedRow.amount;
     const type = normalizedRow.type;
     const category = normalizedRow.category;
     const tags = normalizedRow.tags || normalizedRow.tag;
-    const description = normalizedRow.description || normalizedRow.desc || normalizedRow.note;
-    const date = normalizedRow.date || normalizedRow.transactiondate || normalizedRow.datetime;
+    const description =
+      normalizedRow.description || normalizedRow.desc || normalizedRow.note;
+    const date =
+      normalizedRow.date ||
+      normalizedRow.transactiondate ||
+      normalizedRow.datetime;
 
     // Нормализуем walletId как строку и проверяем на placeholder
     const walletIdStr = walletId ? String(walletId).trim() : '';
     const walletIdUpper = walletIdStr.toUpperCase();
-    const isPlaceholder = !walletIdStr || 
-        walletIdUpper === 'WALLET_ID_HERE' ||
-        walletIdUpper === 'WALLETID_HERE' ||
-        walletIdUpper === 'WALLET_ID' ||
-        walletIdStr === '';
+    const isPlaceholder =
+      !walletIdStr ||
+      walletIdUpper === 'WALLET_ID_HERE' ||
+      walletIdUpper === 'WALLETID_HERE' ||
+      walletIdUpper === 'WALLET_ID' ||
+      walletIdStr === '';
 
     // Если walletId не указан, пустой, или это placeholder, используем defaultWalletId
     if (isPlaceholder) {
       if (defaultWalletId) {
-        this.logger.debug(`Replacing placeholder "${walletIdStr}" with defaultWalletId: ${defaultWalletId}`);
+        this.logger.debug(
+          `Replacing placeholder "${walletIdStr}" with defaultWalletId: ${defaultWalletId}`,
+        );
         walletId = defaultWalletId;
       } else {
-        throw new Error('ID кошелька обязателен. Выберите кошелек в интерфейсе перед импортом.');
+        throw new Error(
+          'ID кошелька обязателен. Выберите кошелек в интерфейсе перед импортом.',
+        );
       }
     } else {
       this.logger.debug(`Using walletId from file: ${walletIdStr}`);
@@ -207,16 +234,21 @@ export class ImportExportService {
 
     // Теперь проверяем формат UUID для walletId (после замены placeholder)
     const finalWalletId = String(walletId).trim();
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(finalWalletId)) {
-      throw new Error(`ID кошелька должен быть в формате UUID. Получено: "${finalWalletId}". Убедитесь, что вы выбрали кошелек в интерфейсе или указали правильный ID в файле.`);
+      throw new Error(
+        `ID кошелька должен быть в формате UUID. Получено: "${finalWalletId}". Убедитесь, что вы выбрали кошелек в интерфейсе или указали правильный ID в файле.`,
+      );
     }
-    
+
     if (!amount || isNaN(parseFloat(amount))) {
       throw new Error('Сумма должна быть валидным числом');
     }
     if (!type || !Object.values(TransactionType).includes(type.toLowerCase())) {
-      throw new Error(`Тип транзакции должен быть одним из: ${Object.values(TransactionType).join(', ')}. Используйте 'income' для дохода или 'expense' для расхода.`);
+      throw new Error(
+        `Тип транзакции должен быть одним из: ${Object.values(TransactionType).join(', ')}. Используйте 'income' для дохода или 'expense' для расхода.`,
+      );
     }
     if (!category) {
       throw new Error('Категория обязательна для заполнения');
@@ -230,19 +262,28 @@ export class ImportExportService {
     try {
       parsedDate = new Date(date);
       if (isNaN(parsedDate.getTime())) {
-        throw new Error(`Неверный формат даты: "${date}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`);
+        throw new Error(
+          `Неверный формат даты: "${date}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`,
+        );
       }
     } catch (error) {
-      throw new Error(`Неверный формат даты: "${date}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`);
+      throw new Error(
+        `Неверный формат даты: "${date}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`,
+      );
     }
 
     // Парсинг тегов
     let parsedTags: string[] = [];
     if (tags) {
       if (typeof tags === 'string') {
-        parsedTags = tags.split(',').map((t) => t.trim()).filter((t) => t.length > 0);
+        parsedTags = tags
+          .split(',')
+          .map((t) => t.trim())
+          .filter((t) => t.length > 0);
       } else if (Array.isArray(tags)) {
-        parsedTags = tags.map((t) => String(t).trim()).filter((t) => t.length > 0);
+        parsedTags = tags
+          .map((t) => String(t).trim())
+          .filter((t) => t.length > 0);
       }
     }
 
@@ -260,18 +301,26 @@ export class ImportExportService {
   /**
    * Экспорт транзакций в CSV
    */
-  async exportToCsv(userId: string, startDate?: Date, endDate?: Date): Promise<string> {
-    const transactions = await this.getTransactionsForExport(userId, startDate, endDate);
+  async exportToCsv(
+    userId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<string> {
+    const transactions = await this.getTransactionsForExport(
+      userId,
+      startDate,
+      endDate,
+    );
 
     // Преобразовать в формат для CSV
     const csvData = transactions.map((t) => ({
       'Wallet ID': t.walletId,
-      'Amount': t.amount,
-      'Type': t.type,
-      'Category': t.category,
-      'Tags': Array.isArray(t.tags) ? t.tags.join(',') : '',
-      'Description': t.description || '',
-      'Date': new Date(t.date).toISOString(),
+      Amount: t.amount,
+      Type: t.type,
+      Category: t.category,
+      Tags: Array.isArray(t.tags) ? t.tags.join(',') : '',
+      Description: t.description || '',
+      Date: new Date(t.date).toISOString(),
       'Created At': new Date(t.createdAt).toISOString(),
     }));
 
@@ -281,18 +330,26 @@ export class ImportExportService {
   /**
    * Экспорт транзакций в Excel
    */
-  async exportToExcel(userId: string, startDate?: Date, endDate?: Date): Promise<Buffer> {
-    const transactions = await this.getTransactionsForExport(userId, startDate, endDate);
+  async exportToExcel(
+    userId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<Buffer> {
+    const transactions = await this.getTransactionsForExport(
+      userId,
+      startDate,
+      endDate,
+    );
 
     // Преобразовать в формат для Excel
     const excelData = transactions.map((t) => ({
       'Wallet ID': t.walletId,
-      'Amount': parseFloat(t.amount.toString()),
-      'Type': t.type,
-      'Category': t.category,
-      'Tags': Array.isArray(t.tags) ? t.tags.join(',') : '',
-      'Description': t.description || '',
-      'Date': new Date(t.date).toISOString(),
+      Amount: parseFloat(t.amount.toString()),
+      Type: t.type,
+      Category: t.category,
+      Tags: Array.isArray(t.tags) ? t.tags.join(',') : '',
+      Description: t.description || '',
+      Date: new Date(t.date).toISOString(),
       'Created At': new Date(t.createdAt).toISOString(),
     }));
 
@@ -304,7 +361,9 @@ export class ImportExportService {
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Transactions');
 
     // Конвертировать в buffer
-    return Buffer.from(XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }));
+    return Buffer.from(
+      XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' }),
+    );
   }
 
   /**
@@ -315,15 +374,19 @@ export class ImportExportService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<Transaction[]> {
-    const queryBuilder = this.transactionRepository.createQueryBuilder('transaction');
+    const queryBuilder =
+      this.transactionRepository.createQueryBuilder('transaction');
 
     queryBuilder.where('transaction.userId = :userId', { userId });
 
     if (startDate && endDate) {
-      queryBuilder.andWhere('transaction.date BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      });
+      queryBuilder.andWhere(
+        'transaction.date BETWEEN :startDate AND :endDate',
+        {
+          startDate,
+          endDate,
+        },
+      );
     } else if (startDate) {
       queryBuilder.andWhere('transaction.date >= :startDate', { startDate });
     } else if (endDate) {
@@ -333,4 +396,3 @@ export class ImportExportService {
     return queryBuilder.orderBy('transaction.date', 'DESC').getMany();
   }
 }
-

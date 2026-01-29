@@ -20,10 +20,7 @@ export class CurrenciesController {
 
   @Public()
   @Get('rate')
-  async getRate(
-    @Query('from') from: string,
-    @Query('to') to: string,
-  ) {
+  async getRate(@Query('from') from: string, @Query('to') to: string) {
     if (!from || !to) {
       return {
         error: 'Both "from" and "to" parameters are required',
@@ -93,4 +90,3 @@ export class CurrenciesController {
     };
   }
 }
-

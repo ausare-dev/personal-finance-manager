@@ -88,7 +88,9 @@ export class BudgetsService {
   ): Promise<BudgetWithUsage> {
     const dateRange = this.getPeriodDateRange(budget.period);
     const numericLimit =
-      typeof budget.limit === 'string' ? parseFloat(budget.limit) : budget.limit;
+      typeof budget.limit === 'string'
+        ? parseFloat(budget.limit)
+        : budget.limit;
 
     // Get all expense transactions for this category in the period
     const { data: transactions } = await this.transactionsService.findAll(

@@ -24,4 +24,3 @@ export class EducationController {
     return this.educationService.getCategories();
   }
 }
-

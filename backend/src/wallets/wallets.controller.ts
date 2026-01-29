@@ -55,10 +55,7 @@ export class WalletsController {
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Нет доступа к кошельку' })
   @ApiResponse({ status: 404, description: 'Кошелек не найден' })
-  findOne(
-    @Param('id') id: string,
-    @CurrentUser() user: { id: string },
-  ) {
+  findOne(@Param('id') id: string, @CurrentUser() user: { id: string }) {
     return this.walletsService.findOne(id, user.id);
   }
 
@@ -85,10 +82,7 @@ export class WalletsController {
   @ApiResponse({ status: 401, description: 'Не авторизован' })
   @ApiResponse({ status: 403, description: 'Нет доступа к кошельку' })
   @ApiResponse({ status: 404, description: 'Кошелек не найден' })
-  remove(
-    @Param('id') id: string,
-    @CurrentUser() user: { id: string },
-  ) {
+  remove(@Param('id') id: string, @CurrentUser() user: { id: string }) {
     return this.walletsService.remove(id, user.id);
   }
 }

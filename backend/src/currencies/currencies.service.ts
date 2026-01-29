@@ -95,9 +95,7 @@ export class CurrenciesService implements OnModuleInit {
   /**
    * Получить курсы для конкретной базовой валюты
    */
-  async getRatesByBaseCurrency(
-    baseCurrency: string,
-  ): Promise<CurrencyRate[]> {
+  async getRatesByBaseCurrency(baseCurrency: string): Promise<CurrencyRate[]> {
     return this.currencyRateRepository.find({
       where: { fromCurrency: baseCurrency.toUpperCase() },
       order: { toCurrency: 'ASC' },
@@ -226,4 +224,3 @@ export class CurrenciesService implements OnModuleInit {
     await this.updateRates();
   }
 }
-

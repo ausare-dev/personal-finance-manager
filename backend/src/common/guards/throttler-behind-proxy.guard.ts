@@ -13,4 +13,3 @@ export class ThrottlerBehindProxyGuard extends ThrottlerGuard {
     );
   }
 }
-

@@ -32,4 +32,3 @@ export class Article {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-

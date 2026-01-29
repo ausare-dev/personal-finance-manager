@@ -26,4 +26,3 @@ export class CreateInvestmentDto {
   @IsDateString()
   purchaseDate: string;
 }
-

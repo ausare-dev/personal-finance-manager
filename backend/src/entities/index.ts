@@ -6,4 +6,3 @@ export { Goal } from './goal.entity';
 export { Investment } from './investment.entity';
 export { CurrencyRate } from './currency-rate.entity';
 export { Article } from './article.entity';
-

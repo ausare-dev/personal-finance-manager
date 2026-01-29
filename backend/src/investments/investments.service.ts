@@ -38,9 +38,7 @@ export class InvestmentsService {
       order: { purchaseDate: 'DESC' },
     });
 
-    return investments.map((investment) =>
-      this.calculateMetrics(investment),
-    );
+    return investments.map((investment) => this.calculateMetrics(investment));
   }
 
   async getPortfolio(userId: string): Promise<PortfolioSummary> {
@@ -50,10 +48,7 @@ export class InvestmentsService {
       (sum, inv) => sum + inv.totalValue,
       0,
     );
-    const totalCost = investments.reduce(
-      (sum, inv) => sum + inv.totalCost,
-      0,
-    );
+    const totalCost = investments.reduce((sum, inv) => sum + inv.totalCost, 0);
     const totalProfitLoss = totalValue - totalCost;
     const totalProfitLossPercentage =
       totalCost > 0 ? (totalProfitLoss / totalCost) * 100 : 0;
@@ -63,15 +58,13 @@ export class InvestmentsService {
       totalValue: Math.round(totalValue * 100) / 100,
       totalCost: Math.round(totalCost * 100) / 100,
       totalProfitLoss: Math.round(totalProfitLoss * 100) / 100,
-      totalProfitLossPercentage: Math.round(totalProfitLossPercentage * 100) / 100,
+      totalProfitLossPercentage:
+        Math.round(totalProfitLossPercentage * 100) / 100,
       investments,
     };
   }
 
-  async findOne(
-    id: string,
-    userId: string,
-  ): Promise<InvestmentWithMetrics> {
+  async findOne(id: string, userId: string): Promise<InvestmentWithMetrics> {
     const investment = await this.investmentRepository.findOne({
       where: { id },
     });
@@ -81,9 +74,7 @@ export class InvestmentsService {
     }
 
     if (investment.userId !== userId) {
-      throw new ForbiddenException(
-        'You do not have access to this investment',
-      );
+      throw new ForbiddenException('You do not have access to this investment');
     }
 
     return this.calculateMetrics(investment);
@@ -117,9 +108,7 @@ export class InvestmentsService {
     }
 
     if (investment.userId !== userId) {
-      throw new ForbiddenException(
-        'You do not have access to this investment',
-      );
+      throw new ForbiddenException('You do not have access to this investment');
     }
 
     Object.assign(investment, {
@@ -129,8 +118,7 @@ export class InvestmentsService {
         : investment.purchaseDate,
     });
 
-    const updatedInvestment =
-      await this.investmentRepository.save(investment);
+    const updatedInvestment = await this.investmentRepository.save(investment);
     return this.calculateMetrics(updatedInvestment);
   }
 
@@ -144,17 +132,13 @@ export class InvestmentsService {
     }
 
     if (investment.userId !== userId) {
-      throw new ForbiddenException(
-        'You do not have access to this investment',
-      );
+      throw new ForbiddenException('You do not have access to this investment');
     }
 
     await this.investmentRepository.remove(investment);
   }
 
-  private calculateMetrics(
-    investment: Investment,
-  ): InvestmentWithMetrics {
+  private calculateMetrics(investment: Investment): InvestmentWithMetrics {
     const numericQuantity = parseFloat(investment.quantity.toString());
     const numericPurchasePrice = parseFloat(
       investment.purchasePrice.toString(),
@@ -176,4 +160,3 @@ export class InvestmentsService {
     };
   }
 }
-

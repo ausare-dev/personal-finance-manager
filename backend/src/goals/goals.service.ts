@@ -147,9 +147,7 @@ export class GoalsService {
   }
 
   private calculateProgress(goal: Goal): GoalWithProgress {
-    const numericCurrentAmount = parseFloat(
-      goal.currentAmount.toString(),
-    );
+    const numericCurrentAmount = parseFloat(goal.currentAmount.toString());
     const numericTargetAmount = parseFloat(goal.targetAmount.toString());
     const numericInterestRate = parseFloat(goal.interestRate.toString());
 
@@ -180,7 +178,8 @@ export class GoalsService {
       // Simple compound interest calculation
       // A = P * (1 + r)^t
       projectedAmount =
-        numericCurrentAmount * Math.pow(1 + numericInterestRate / 100, yearsRemaining);
+        numericCurrentAmount *
+        Math.pow(1 + numericInterestRate / 100, yearsRemaining);
     }
 
     // Calculate projected progress
@@ -203,4 +202,3 @@ export class GoalsService {
     };
   }
 }
-

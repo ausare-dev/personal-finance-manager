@@ -41,9 +41,14 @@ export class ImportExportController {
     }
 
     // Извлекаем walletId из body (FormData)
-    const walletId = (req.body && req.body.walletId) ? req.body.walletId : undefined;
+    const walletId =
+      req.body && req.body.walletId ? req.body.walletId : undefined;
 
-    const result = await this.importExportService.importFromCsv(file, user.id, walletId);
+    const result = await this.importExportService.importFromCsv(
+      file,
+      user.id,
+      walletId,
+    );
     return result;
   }
 
@@ -74,9 +79,14 @@ export class ImportExportController {
     }
 
     // Извлекаем walletId из body (FormData)
-    const walletId = (req.body && req.body.walletId) ? req.body.walletId : undefined;
+    const walletId =
+      req.body && req.body.walletId ? req.body.walletId : undefined;
 
-    const result = await this.importExportService.importFromExcel(file, user.id, walletId);
+    const result = await this.importExportService.importFromExcel(
+      file,
+      user.id,
+      walletId,
+    );
     return result;
   }
 
@@ -90,10 +100,17 @@ export class ImportExportController {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
 
-    const csvContent = await this.importExportService.exportToCsv(user.id, start, end);
+    const csvContent = await this.importExportService.exportToCsv(
+      user.id,
+      start,
+      end,
+    );
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=transactions.csv');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=transactions.csv',
+    );
     res.send(csvContent);
   }
 
@@ -107,14 +124,20 @@ export class ImportExportController {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
 
-    const excelBuffer = await this.importExportService.exportToExcel(user.id, start, end);
+    const excelBuffer = await this.importExportService.exportToExcel(
+      user.id,
+      start,
+      end,
+    );
 
     res.setHeader(
       'Content-Type',
       'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     );
-    res.setHeader('Content-Disposition', 'attachment; filename=transactions.xlsx');
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename=transactions.xlsx',
+    );
     res.send(excelBuffer);
   }
 }
-

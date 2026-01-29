@@ -38,4 +38,3 @@ export class Investment {
   @JoinColumn({ name: 'userId' })
   user: User;
 }
-

@@ -23,9 +23,7 @@ export class AuthController {
   })
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 409, description: 'Пользователь уже существует' })
-  async register(
-    @Body() registerDto: RegisterDto,
-  ): Promise<AuthResponseDto> {
+  async register(@Body() registerDto: RegisterDto): Promise<AuthResponseDto> {
     return this.authService.register(registerDto);
   }
 

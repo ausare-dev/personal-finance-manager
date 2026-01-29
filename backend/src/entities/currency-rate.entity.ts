@@ -28,4 +28,3 @@ export class CurrencyRate {
   @UpdateDateColumn()
   updatedAt: Date;
 }
-

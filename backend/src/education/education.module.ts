@@ -11,4 +11,3 @@ import { EducationController } from './education.controller';
   exports: [EducationService],
 })
 export class EducationModule {}
-

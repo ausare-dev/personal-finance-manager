@@ -147,4 +147,3 @@ export async function seedDatabase(dataSource: DataSource): Promise<void> {
 
   console.log('Seed data created successfully!');
 }
-

@@ -1,4 +1,9 @@
-import { Injectable, ConflictException, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from '../entities/user.entity';
@@ -48,21 +53,30 @@ export class UserService {
 
     // Проверяем, что email действительно изменился
     if (user.email === newEmail) {
-      throw new BadRequestException('New email must be different from current email');
+      throw new BadRequestException(
+        'New email must be different from current email',
+      );
     }
 
     user.email = newEmail;
     return this.userRepository.save(user);
   }
 
-  async updatePassword(userId: string, currentPassword: string, newPassword: string): Promise<void> {
+  async updatePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
     const user = await this.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     // Проверяем текущий пароль
-    const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
     if (!isPasswordValid) {
       throw new BadRequestException('Current password is incorrect');
     }
@@ -70,7 +84,9 @@ export class UserService {
     // Проверяем, что новый пароль отличается от текущего
     const isSamePassword = await bcrypt.compare(newPassword, user.password);
     if (isSamePassword) {
-      throw new BadRequestException('New password must be different from current password');
+      throw new BadRequestException(
+        'New password must be different from current password',
+      );
     }
 
     // Хешируем и сохраняем новый пароль

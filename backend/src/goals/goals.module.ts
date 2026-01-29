@@ -11,4 +11,3 @@ import { GoalsController } from './goals.controller';
   exports: [GoalsService],
 })
 export class GoalsModule {}
-

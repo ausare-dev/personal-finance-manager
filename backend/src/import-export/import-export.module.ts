@@ -17,4 +17,3 @@ import { WalletsModule } from '../wallets/wallets.module';
   exports: [ImportExportService],
 })
 export class ImportExportModule {}
-

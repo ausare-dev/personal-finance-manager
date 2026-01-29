@@ -59,4 +59,3 @@ export class Transaction {
   @JoinColumn({ name: 'walletId' })
   wallet: Wallet;
 }
-

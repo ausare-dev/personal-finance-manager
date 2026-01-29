@@ -29,4 +29,3 @@ export class CreateGoalDto {
   @IsOptional()
   interestRate?: number;
 }
-

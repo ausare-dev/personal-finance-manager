@@ -52,4 +52,3 @@ export class BudgetsController {
     return this.budgetsService.remove(id, user.id);
   }
 }
-

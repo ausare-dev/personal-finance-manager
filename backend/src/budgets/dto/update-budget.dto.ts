@@ -15,4 +15,3 @@ export class UpdateBudgetDto {
   @IsOptional()
   period?: BudgetPeriod;
 }
-

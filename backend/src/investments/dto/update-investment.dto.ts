@@ -30,4 +30,3 @@ export class UpdateInvestmentDto {
   @IsOptional()
   purchaseDate?: string;
 }
-

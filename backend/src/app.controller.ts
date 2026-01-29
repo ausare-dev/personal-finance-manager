@@ -54,7 +54,10 @@ export class AppController {
     @CurrentUser() user: { id: string; email: string },
     @Body() updateEmailDto: UpdateEmailDto,
   ) {
-    const updatedUser = await this.userService.updateEmail(user.id, updateEmailDto.email);
+    const updatedUser = await this.userService.updateEmail(
+      user.id,
+      updateEmailDto.email,
+    );
     return {
       message: 'Email успешно обновлен',
       user: {

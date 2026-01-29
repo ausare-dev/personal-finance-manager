@@ -21,4 +21,3 @@ export class CreateBudgetDto {
   @IsOptional()
   period?: BudgetPeriod;
 }
-

@@ -844,4 +844,3 @@ export async function seedDemoData(dataSource: DataSource): Promise<void> {
   console.log('  Email: demo@example.com');
   console.log('  Password: demo123');
 }
-

@@ -47,4 +47,3 @@ export class EducationService {
     return categories.sort();
   }
 }
-

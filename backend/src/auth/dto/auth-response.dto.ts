@@ -5,4 +5,3 @@ export class AuthResponseDto {
     email: string;
   };
 }
-

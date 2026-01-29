@@ -119,12 +119,12 @@ export class AnalyticsService {
     groupBy: 'day' | 'week' | 'month' = 'day',
   ): Promise<IncomeExpenseData[]> {
     // Установить значения по умолчанию, если они не предоставлены
-    const defaultStartDate = startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 дней назад
+    const defaultStartDate =
+      startDate || new Date(Date.now() - 30 * 24 * 60 * 60 * 1000); // 30 дней назад
     const defaultEndDate = endDate || new Date();
 
-    const queryBuilder = this.transactionRepository.createQueryBuilder(
-      'transaction',
-    );
+    const queryBuilder =
+      this.transactionRepository.createQueryBuilder('transaction');
 
     queryBuilder
       .where('transaction.userId = :userId', { userId })
@@ -138,10 +138,7 @@ export class AnalyticsService {
       .getMany();
 
     // Группировка по периодам
-    const periodMap = new Map<
-      string,
-      { income: Decimal; expense: Decimal }
-    >();
+    const periodMap = new Map<string, { income: Decimal; expense: Decimal }>();
 
     for (const transaction of transactions) {
       const date = new Date(transaction.date);
@@ -171,9 +168,13 @@ export class AnalyticsService {
       } else {
         periodMap.set(periodKey, {
           income:
-            transaction.type === TransactionType.INCOME ? amount : new Decimal(0),
+            transaction.type === TransactionType.INCOME
+              ? amount
+              : new Decimal(0),
           expense:
-            transaction.type === TransactionType.EXPENSE ? amount : new Decimal(0),
+            transaction.type === TransactionType.EXPENSE
+              ? amount
+              : new Decimal(0),
         });
       }
     }
@@ -203,9 +204,8 @@ export class AnalyticsService {
     startDate?: Date,
     endDate?: Date,
   ): Promise<CategoryStats[]> {
-    const queryBuilder = this.transactionRepository.createQueryBuilder(
-      'transaction',
-    );
+    const queryBuilder =
+      this.transactionRepository.createQueryBuilder('transaction');
 
     queryBuilder.where('transaction.userId = :userId', { userId });
 
@@ -214,10 +214,13 @@ export class AnalyticsService {
     }
 
     if (startDate && endDate) {
-      queryBuilder.andWhere('transaction.date BETWEEN :startDate AND :endDate', {
-        startDate,
-        endDate,
-      });
+      queryBuilder.andWhere(
+        'transaction.date BETWEEN :startDate AND :endDate',
+        {
+          startDate,
+          endDate,
+        },
+      );
     } else if (startDate) {
       queryBuilder.andWhere('transaction.date >= :startDate', { startDate });
     } else if (endDate) {
@@ -227,7 +230,10 @@ export class AnalyticsService {
     const transactions = await queryBuilder.getMany();
 
     // Группировка по категориям
-    const categoryMap = new Map<string, { amount: Decimal; count: number; type: TransactionType }>();
+    const categoryMap = new Map<
+      string,
+      { amount: Decimal; count: number; type: TransactionType }
+    >();
 
     for (const transaction of transactions) {
       const amount = new Decimal(transaction.amount.toString());
@@ -252,21 +258,21 @@ export class AnalyticsService {
     });
 
     // Преобразовать в массив и рассчитать проценты
-    const categoryStats: CategoryStats[] = Array.from(categoryMap.entries()).map(
-      ([category, data]) => {
-        const percentage = totalAmount.gt(0)
-          ? data.amount.dividedBy(totalAmount).times(100).toNumber()
-          : 0;
+    const categoryStats: CategoryStats[] = Array.from(
+      categoryMap.entries(),
+    ).map(([category, data]) => {
+      const percentage = totalAmount.gt(0)
+        ? data.amount.dividedBy(totalAmount).times(100).toNumber()
+        : 0;
 
-        return {
-          category,
-          totalAmount: data.amount.toNumber(),
-          transactionCount: data.count,
-          type: data.type,
-          percentage: Math.round(percentage * 100) / 100,
-        };
-      },
-    );
+      return {
+        category,
+        totalAmount: data.amount.toNumber(),
+        transactionCount: data.count,
+        type: data.type,
+        percentage: Math.round(percentage * 100) / 100,
+      };
+    });
 
     // Сортировать по сумме (убывание)
     return categoryStats.sort((a, b) => b.totalAmount - a.totalAmount);
@@ -281,9 +287,8 @@ export class AnalyticsService {
     endDate: Date,
     groupBy: 'day' | 'week' | 'month' = 'day',
   ): Promise<TrendData[]> {
-    const queryBuilder = this.transactionRepository.createQueryBuilder(
-      'transaction',
-    );
+    const queryBuilder =
+      this.transactionRepository.createQueryBuilder('transaction');
 
     queryBuilder
       .where('transaction.userId = :userId', { userId })
@@ -297,10 +302,7 @@ export class AnalyticsService {
       .getMany();
 
     // Группировка по датам
-    const dateMap = new Map<
-      string,
-      { income: Decimal; expense: Decimal }
-    >();
+    const dateMap = new Map<string, { income: Decimal; expense: Decimal }>();
 
     for (const transaction of transactions) {
       let dateKey: string;
@@ -333,9 +335,13 @@ export class AnalyticsService {
       } else {
         dateMap.set(dateKey, {
           income:
-            transaction.type === TransactionType.INCOME ? amount : new Decimal(0),
+            transaction.type === TransactionType.INCOME
+              ? amount
+              : new Decimal(0),
           expense:
-            transaction.type === TransactionType.EXPENSE ? amount : new Decimal(0),
+            transaction.type === TransactionType.EXPENSE
+              ? amount
+              : new Decimal(0),
         });
       }
     }
@@ -356,4 +362,3 @@ export class AnalyticsService {
     return trends;
   }
 }
-

@@ -1,4 +1,13 @@
-import { IsOptional, IsEnum, IsString, IsUUID, IsDateString, IsInt, Min, Max } from 'class-validator';
+import {
+  IsOptional,
+  IsEnum,
+  IsString,
+  IsUUID,
+  IsDateString,
+  IsInt,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { TransactionType } from '../../entities/transaction.entity';
 
@@ -40,4 +49,3 @@ export class FilterTransactionDto {
   @IsOptional()
   limit?: number = 10;
 }
-

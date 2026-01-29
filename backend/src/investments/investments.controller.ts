@@ -65,4 +65,3 @@ export class InvestmentsController {
     return this.investmentsService.remove(id, user.id);
   }
 }
-

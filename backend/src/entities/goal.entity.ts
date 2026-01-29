@@ -38,4 +38,3 @@ export class Goal {
   @JoinColumn({ name: 'userId' })
   user: User;
 }
-

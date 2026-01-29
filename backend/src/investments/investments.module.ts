@@ -11,4 +11,3 @@ import { InvestmentsController } from './investments.controller';
   exports: [InvestmentsService],
 })
 export class InvestmentsModule {}
-

@@ -37,4 +37,3 @@ export class Wallet {
   @OneToMany(() => Transaction, (transaction) => transaction.wallet)
   transactions: Transaction[];
 }
-

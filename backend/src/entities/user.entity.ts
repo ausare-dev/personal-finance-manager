@@ -44,4 +44,3 @@ export class User {
   @OneToMany(() => Investment, (investment) => investment.user)
   investments: Investment[];
 }
-

@@ -35,4 +35,3 @@ export class ImportTransactionDto {
   @IsDateString()
   date: string;
 }
-

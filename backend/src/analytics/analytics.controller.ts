@@ -29,9 +29,14 @@ export class AnalyticsController {
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    const data = await this.analyticsService.getIncomeExpense(user.id, start, end, groupBy);
+    const data = await this.analyticsService.getIncomeExpense(
+      user.id,
+      start,
+      end,
+      groupBy,
+    );
     // Transform to match frontend expectations
-    return data.map(item => ({
+    return data.map((item) => ({
       period: item.period,
       income: item.income.toString(),
       expense: item.expense.toString(),
@@ -48,9 +53,14 @@ export class AnalyticsController {
   ) {
     const start = startDate ? new Date(startDate) : undefined;
     const end = endDate ? new Date(endDate) : undefined;
-    const categories = await this.analyticsService.getByCategory(user.id, type, start, end);
+    const categories = await this.analyticsService.getByCategory(
+      user.id,
+      type,
+      start,
+      end,
+    );
     // Transform to match frontend expectations
-    return categories.map(item => ({
+    return categories.map((item) => ({
       category: item.category,
       total: item.totalAmount.toString(),
       count: item.transactionCount,
@@ -76,4 +86,3 @@ export class AnalyticsController {
     return this.analyticsService.getTrends(user.id, start, end, groupBy);
   }
 }
-
