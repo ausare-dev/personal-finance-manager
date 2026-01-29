@@ -1,13 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { EducationService } from './education.service';
 import { Article } from '../entities/article.entity';
 import { NotFoundException } from '@nestjs/common';
 
 describe('EducationService', () => {
   let service: EducationService;
-  let repository: Repository<Article>;
 
   const mockRepository = {
     find: jest.fn(),
@@ -27,7 +25,6 @@ describe('EducationService', () => {
     }).compile();
 
     service = module.get<EducationService>(EducationService);
-    repository = module.get<Repository<Article>>(getRepositoryToken(Article));
   });
 
   afterEach(() => {

@@ -89,6 +89,7 @@ export default function AnalyticsPage() {
 
   useEffect(() => {
     loadAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dateRange, groupBy]);
 
   const loadAnalytics = async () => {
@@ -118,7 +119,7 @@ export default function AnalyticsPage() {
       setTrendData(Array.isArray(trends) ? trends : []);
       setGoals(Array.isArray(goalsData) ? goalsData : []);
       setPortfolio(portfolioData);
-    } catch (error) {
+    } catch {
       message.error('Ошибка при загрузке аналитики');
     } finally {
       setLoading(false);
@@ -166,7 +167,7 @@ export default function AnalyticsPage() {
   }));
 
   // Подготовка данных для графика инвестиционного портфеля
-  const portfolioPieData = portfolio?.investments.map((inv, index) => ({
+  const portfolioPieData = portfolio?.investments.map((inv) => ({
     name: inv.assetName,
     value: parseFloat(inv.totalValue || '0'),
     profitLoss: parseFloat(inv.profitLoss || '0'),
@@ -174,13 +175,18 @@ export default function AnalyticsPage() {
   })) || [];
 
   // Функция экспорта графика (опционально - базовый вариант)
-  const exportChart = (chartId: string, filename: string) => {
+  const exportChart = (_chartId: string, _filename: string) => {
     message.info('Экспорт графиков будет реализован в следующих версиях');
     // В будущем можно использовать html2canvas для экспорта
   };
 
   // Кастомный Tooltip для графиков
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  type TooltipPayloadItem = { name: string; value: number; color?: string };
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: { active?: boolean; payload?: TooltipPayloadItem[]; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div
@@ -192,7 +198,7 @@ export default function AnalyticsPage() {
           }}
         >
           <p style={{ margin: 0, fontWeight: 'bold' }}>{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <p
               key={index}
               style={{
@@ -367,7 +373,7 @@ export default function AnalyticsPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={(props: any) => {
+                            label={(props: { name?: string; percent?: number }) => {
                               const { name, percent } = props;
                               if (!name || percent === undefined) return '';
                               return `${name}: ${(percent * 100).toFixed(0)}%`;
@@ -579,7 +585,7 @@ export default function AnalyticsPage() {
                             cx="50%"
                             cy="50%"
                             labelLine={false}
-                            label={(props: any) => {
+                            label={(props: { name?: string; percent?: number }) => {
                               const { name, percent } = props;
                               if (!name || percent === undefined) return '';
                               return `${name}: ${(percent * 100).toFixed(0)}%`;

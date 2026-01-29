@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { UserService } from './user.service';
 import { User } from '../entities/user.entity';
 import { ConflictException } from '@nestjs/common';
@@ -11,7 +10,6 @@ const mockedBcrypt = bcrypt as jest.Mocked<typeof bcrypt>;
 
 describe('UserService', () => {
   let service: UserService;
-  let repository: Repository<User>;
 
   const mockRepository = {
     findOne: jest.fn(),
@@ -31,7 +29,6 @@ describe('UserService', () => {
     }).compile();
 
     service = module.get<UserService>(UserService);
-    repository = module.get<Repository<User>>(getRepositoryToken(User));
   });
 
   afterEach(() => {

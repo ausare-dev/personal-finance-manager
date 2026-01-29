@@ -14,7 +14,6 @@ import {
   Empty,
   Select,
   Input,
-  Button,
 } from 'antd';
 import {
   BookOutlined,
@@ -47,6 +46,7 @@ export default function EducationPage() {
 
   useEffect(() => {
     filterArticles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articles, selectedCategory, searchQuery]);
 
   const loadData = async () => {

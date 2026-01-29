@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { WalletsService } from './wallets.service';
 import { Wallet } from '../entities/wallet.entity';
 import { CreateWalletDto } from './dto/create-wallet.dto';
@@ -8,7 +7,6 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('WalletsService', () => {
   let service: WalletsService;
-  let repository: Repository<Wallet>;
 
   const mockRepository = {
     find: jest.fn(),
@@ -31,7 +29,6 @@ describe('WalletsService', () => {
     }).compile();
 
     service = module.get<WalletsService>(WalletsService);
-    repository = module.get<Repository<Wallet>>(getRepositoryToken(Wallet));
   });
 
   afterEach(() => {

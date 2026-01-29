@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { ImportExportService } from './import-export.service';
 import { Transaction, TransactionType } from '../entities/transaction.entity';
 import { WalletsService } from '../wallets/wallets.service';
@@ -12,7 +11,6 @@ const validWalletId = '11111111-1111-4111-8111-111111111111';
 
 describe('ImportExportService', () => {
   let service: ImportExportService;
-  let transactionsService: TransactionsService;
 
   const mockTransactionRepository = {
     createQueryBuilder: jest.fn(),
@@ -50,7 +48,6 @@ describe('ImportExportService', () => {
     }).compile();
 
     service = module.get<ImportExportService>(ImportExportService);
-    transactionsService = module.get<TransactionsService>(TransactionsService);
   });
 
   afterEach(() => {
@@ -88,7 +85,7 @@ describe('ImportExportService', () => {
       expect(result.success).toBe(1);
       expect(result.failed).toBe(0);
       expect(result.errors).toHaveLength(0);
-      expect(transactionsService.create).toHaveBeenCalledWith(
+      expect(mockTransactionsService.create).toHaveBeenCalledWith(
         expect.objectContaining({
           walletId: validWalletId,
           amount: 100,
@@ -210,7 +207,7 @@ describe('ImportExportService', () => {
 
       expect(result.success).toBe(1);
       expect(result.failed).toBe(0);
-      expect(transactionsService.create).toHaveBeenCalledWith(
+      expect(mockTransactionsService.create).toHaveBeenCalledWith(
         expect.objectContaining({
           walletId: validWalletId,
           amount: 200,

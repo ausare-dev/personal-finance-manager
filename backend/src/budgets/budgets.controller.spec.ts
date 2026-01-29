@@ -2,7 +2,6 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BudgetsController } from './budgets.controller';
 import { BudgetsService } from './budgets.service';
 import { CreateBudgetDto } from './dto/create-budget.dto';
-import { UpdateBudgetDto } from './dto/update-budget.dto';
 
 describe('BudgetsController', () => {
   let controller: BudgetsController;

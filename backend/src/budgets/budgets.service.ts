@@ -139,7 +139,7 @@ export class BudgetsService {
         end.setHours(23, 59, 59, 999);
         break;
 
-      case BudgetPeriod.WEEKLY:
+      case BudgetPeriod.WEEKLY: {
         start = new Date(now);
         const dayOfWeek = start.getDay();
         const diff = start.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
@@ -149,6 +149,7 @@ export class BudgetsService {
         end.setDate(start.getDate() + 6);
         end.setHours(23, 59, 59, 999);
         break;
+      }
 
       case BudgetPeriod.MONTHLY:
         start = new Date(now.getFullYear(), now.getMonth(), 1);

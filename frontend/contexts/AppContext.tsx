@@ -56,7 +56,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   // Показать уведомление (будет реализовано через AntdApp.useApp() в компонентах)
   const showNotification = (
     messageText: string,
-    type: 'success' | 'error' | 'info' | 'warning' = 'info'
+    _type: 'success' | 'error' | 'info' | 'warning' = 'info'
   ) => {
     // Это будет использоваться через AntdApp.useApp() в компонентах
     console.warn('showNotification called but AntdApp is not available at this level');

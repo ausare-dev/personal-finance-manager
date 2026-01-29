@@ -1,16 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { TransactionsService } from './transactions.service';
 import { Transaction, TransactionType } from '../entities/transaction.entity';
 import { WalletsService } from '../wallets/wallets.service';
-import { CreateTransactionDto } from './dto/create-transaction.dto';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('TransactionsService', () => {
   let service: TransactionsService;
-  let repository: Repository<Transaction>;
-  let walletsService: WalletsService;
 
   const mockRepository = {
     createQueryBuilder: jest.fn(),
@@ -18,16 +14,6 @@ describe('TransactionsService', () => {
     create: jest.fn(),
     save: jest.fn(),
     remove: jest.fn(),
-  };
-
-  const mockQueryBuilder = {
-    where: jest.fn().mockReturnThis(),
-    andWhere: jest.fn().mockReturnThis(),
-    orderBy: jest.fn().mockReturnThis(),
-    addOrderBy: jest.fn().mockReturnThis(),
-    skip: jest.fn().mockReturnThis(),
-    take: jest.fn().mockReturnThis(),
-    getManyAndCount: jest.fn(),
   };
 
   const mockWalletsService = {
@@ -51,10 +37,6 @@ describe('TransactionsService', () => {
     }).compile();
 
     service = module.get<TransactionsService>(TransactionsService);
-    repository = module.get<Repository<Transaction>>(
-      getRepositoryToken(Transaction),
-    );
-    walletsService = module.get<WalletsService>(WalletsService);
   });
 
   afterEach(() => {

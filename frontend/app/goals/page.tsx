@@ -36,7 +36,7 @@ import {
   CheckCircleOutlined,
   ClockCircleOutlined,
 } from '@ant-design/icons';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs, { Dayjs } from 'dayjs';
@@ -83,11 +83,12 @@ export default function GoalsPage() {
     reset,
     watch,
   } = useForm<FormData>({
-    resolver: yupResolver(goalSchema) as any,
+    resolver: yupResolver(goalSchema) as Resolver<FormData>,
   });
 
   useEffect(() => {
     loadGoals();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadGoals = async () => {
@@ -95,7 +96,7 @@ export default function GoalsPage() {
       setLoading(true);
       const data = await goalsService.getAll();
       setGoals(data);
-    } catch (error) {
+    } catch {
       message.error('Ошибка при загрузке целей');
     } finally {
       setLoading(false);
@@ -123,7 +124,7 @@ export default function GoalsPage() {
       await goalsService.delete(id);
       message.success('Цель удалена');
       loadGoals();
-    } catch (error) {
+    } catch {
       message.error('Ошибка при удалении цели');
     }
   };
@@ -182,11 +183,10 @@ export default function GoalsPage() {
       setEditingGoal(null);
       reset();
       loadGoals();
-    } catch (error: any) {
-      console.error('Error saving goal:', error);
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при сохранении цели';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      console.error('Error saving goal:', e);
+      message.error(err?.response?.data?.message ?? 'Ошибка при сохранении цели');
     }
   };
 
@@ -260,10 +260,6 @@ export default function GoalsPage() {
   const completedGoals = goals.filter((g) => isGoalCompleted(g)).length;
   const totalTarget = goals.reduce(
     (sum, g) => sum + parseFloat(g.targetAmount),
-    0
-  );
-  const totalCurrent = goals.reduce(
-    (sum, g) => sum + parseFloat(g.currentAmount),
     0
   );
   const averageProgress =
@@ -524,7 +520,7 @@ export default function GoalsPage() {
                         {/* Уведомления */}
                         {isOverdue && !isCompleted && (
                           <Alert
-                            message="Дедлайн прошел!"
+                            title="Дедлайн прошел!"
                             description="Цель просрочена. Рекомендуется обновить дедлайн или скорректировать план."
                             type="warning"
                             showIcon
@@ -534,7 +530,7 @@ export default function GoalsPage() {
 
                         {isCompleted && (
                           <Alert
-                            message="Цель достигнута!"
+                            title="Цель достигнута!"
                             description="Поздравляем! Вы успешно достигли своей финансовой цели."
                             type="success"
                             showIcon

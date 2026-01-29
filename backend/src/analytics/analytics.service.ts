@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import Decimal from 'decimal.js';
 import { Transaction, TransactionType } from '../entities/transaction.entity';
 import { Wallet } from '../entities/wallet.entity';
@@ -309,13 +309,13 @@ export class AnalyticsService {
       const date = new Date(transaction.date);
 
       switch (groupBy) {
-        case 'week':
-          // Начало недели (понедельник)
+        case 'week': {
           const weekStart = new Date(date);
           const dayOfWeek = date.getDay() || 7; // 0 = Sunday -> 7
           weekStart.setDate(date.getDate() - dayOfWeek + 1);
           dateKey = weekStart.toISOString().split('T')[0]; // YYYY-MM-DD (начало недели)
           break;
+        }
         case 'month':
           dateKey = date.toISOString().substring(0, 7); // YYYY-MM
           break;

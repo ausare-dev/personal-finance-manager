@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { BudgetsService } from './budgets.service';
 import { Budget, BudgetPeriod } from '../entities/budget.entity';
 import { TransactionsService } from '../transactions/transactions.service';
@@ -9,8 +8,6 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('BudgetsService', () => {
   let service: BudgetsService;
-  let repository: Repository<Budget>;
-  let transactionsService: TransactionsService;
 
   const mockRepository = {
     find: jest.fn(),
@@ -40,8 +37,6 @@ describe('BudgetsService', () => {
     }).compile();
 
     service = module.get<BudgetsService>(BudgetsService);
-    repository = module.get<Repository<Budget>>(getRepositoryToken(Budget));
-    transactionsService = module.get<TransactionsService>(TransactionsService);
   });
 
   afterEach(() => {

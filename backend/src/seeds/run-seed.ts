@@ -1,4 +1,3 @@
-import { DataSource } from 'typeorm';
 import dataSource from '../../data-source';
 import { seedDatabase } from './initial-seed';
 import { seedEducation } from './education-seed';
@@ -23,4 +22,4 @@ async function runSeed() {
   }
 }
 
-runSeed();
+void runSeed();

@@ -53,9 +53,9 @@ export default function LoginPage() {
       await login(data);
       message.success('Вход выполнен успешно!');
       router.push('/dashboard');
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при входе. Проверьте данные.';
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      const errorMessage = err?.response?.data?.message ?? 'Ошибка при входе. Проверьте данные.';
       message.error(errorMessage);
     } finally {
       setLoading(false);
@@ -68,9 +68,9 @@ export default function LoginPage() {
       await login({ email: 'demo@example.com', password: 'demo123' });
       message.success('Добро пожаловать в демо-режим!');
       router.push('/dashboard');
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при входе в демо-режим.';
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      const errorMessage = err?.response?.data?.message ?? 'Ошибка при входе в демо-режим.';
       message.error(errorMessage);
     } finally {
       setLoading(false);

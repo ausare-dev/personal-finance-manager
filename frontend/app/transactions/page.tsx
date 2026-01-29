@@ -31,7 +31,7 @@ import {
 	TransactionOutlined,
 	SearchOutlined,
 } from '@ant-design/icons';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
@@ -102,27 +102,27 @@ export default function TransactionsPage() {
 	const [searchDescription, setSearchDescription] = useState('');
 
 	const {
-		register,
 		handleSubmit,
 		formState: { errors },
 		setValue,
 		reset,
 		watch,
 	} = useForm<CreateTransactionDto>({
-		resolver: yupResolver(transactionSchema) as any,
+		resolver: yupResolver(transactionSchema) as Resolver<CreateTransactionDto>,
 	});
 
 	const walletId = watch('walletId');
 
 	useEffect(() => {
 		loadWallets();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	const loadWallets = async () => {
 		try {
 			const data = await walletsService.getAll();
 			setWallets(data);
-		} catch (error) {
+		} catch {
 			message.error('Ошибка при загрузке кошельков');
 		}
 	};
@@ -186,7 +186,7 @@ export default function TransactionsPage() {
 							total: response.total,
 						};
 					});
-				} catch (error) {
+				} catch {
 					message.error('Ошибка при загрузке транзакций');
 				} finally {
 					isLoadingRef.current = false;
@@ -230,7 +230,7 @@ export default function TransactionsPage() {
 					total: response.total,
 				};
 			});
-		} catch (error) {
+		} catch {
 			message.error('Ошибка при загрузке транзакций');
 		} finally {
 			isLoadingRef.current = false;
@@ -261,7 +261,7 @@ export default function TransactionsPage() {
 			await transactionsService.delete(id);
 			message.success('Транзакция удалена');
 			loadTransactions();
-		} catch (error) {
+		} catch {
 			message.error('Ошибка при удалении транзакции');
 		}
 	};
@@ -278,14 +278,13 @@ export default function TransactionsPage() {
 			setModalVisible(false);
 			reset();
 			loadTransactions();
-		} catch (error: any) {
-			const errorMessage =
-				error?.response?.data?.message || 'Ошибка при сохранении транзакции';
-			message.error(errorMessage);
+		} catch (e: unknown) {
+			const err = e as { response?: { data?: { message?: string } } };
+			message.error(err?.response?.data?.message ?? 'Ошибка при сохранении транзакции');
 		}
 	};
 
-	const handleFilterChange = (key: keyof FilterTransactionDto, value: any) => {
+	const handleFilterChange = (key: keyof FilterTransactionDto, value: FilterTransactionDto[keyof FilterTransactionDto]) => {
 		setFilters(prev => {
 			// Проверяем, изменилось ли значение
 			if (prev[key] === value && key !== 'page') {
@@ -434,7 +433,7 @@ export default function TransactionsPage() {
 			title: 'Действия',
 			key: 'actions',
 			width: 150,
-			render: (_: any, record: Transaction) => (
+			render: (_: unknown, record: Transaction) => (
 				<Space>
 					<Button
 						type='link'

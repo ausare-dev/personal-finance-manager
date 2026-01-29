@@ -30,7 +30,7 @@ import {
   PieChartOutlined,
   WarningOutlined,
 } from '@ant-design/icons';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { budgetsService } from '@/services/budgets.service';
@@ -75,18 +75,18 @@ export default function BudgetsPage() {
   const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
 
   const {
-    register,
     handleSubmit,
     formState: { errors },
     setValue,
     reset,
     watch,
   } = useForm<CreateBudgetDto>({
-    resolver: yupResolver(budgetSchema) as any,
+    resolver: yupResolver(budgetSchema) as Resolver<CreateBudgetDto>,
   });
 
   useEffect(() => {
     loadBudgets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadBudgets = async () => {
@@ -97,7 +97,7 @@ export default function BudgetsPage() {
       
       // Проверяем бюджеты на превышение лимитов и показываем уведомления
       checkBudgetLimits(data);
-    } catch (error) {
+    } catch {
       message.error('Ошибка при загрузке бюджетов');
     } finally {
       setLoading(false);
@@ -138,7 +138,7 @@ export default function BudgetsPage() {
       await budgetsService.delete(id);
       message.success('Бюджет удален');
       loadBudgets();
-    } catch (error) {
+    } catch {
       message.error('Ошибка при удалении бюджета');
     }
   };
@@ -155,10 +155,9 @@ export default function BudgetsPage() {
       setModalVisible(false);
       reset();
       loadBudgets();
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при сохранении бюджета';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при сохранении бюджета');
     }
   };
 
@@ -222,7 +221,7 @@ export default function BudgetsPage() {
           {/* Уведомления о превышении лимитов */}
           {exceededBudgets > 0 && (
             <Alert
-              message={`Превышено бюджетов: ${exceededBudgets}`}
+              title={`Превышено бюджетов: ${exceededBudgets}`}
               description="Один или несколько бюджетов превысили установленный лимит. Рекомендуется пересмотреть расходы."
               type="warning"
               icon={<WarningOutlined />}
@@ -384,7 +383,7 @@ export default function BudgetsPage() {
                         {/* Предупреждение о превышении */}
                         {isExceeded && (
                           <Alert
-                            message="Лимит превышен!"
+                            title="Лимит превышен!"
                             description={`Превышение: ${formatAmount(Math.abs(remaining))}`}
                             type="error"
                             showIcon

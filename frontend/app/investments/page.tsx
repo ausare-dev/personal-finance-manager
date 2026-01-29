@@ -12,7 +12,6 @@ import {
   Form,
   InputNumber,
   DatePicker,
-  Input,
   Popconfirm,
   App,
   Tag,
@@ -22,7 +21,6 @@ import {
   Spin,
   Empty,
   Statistic,
-  Divider,
 } from 'antd';
 import {
   PlusOutlined,
@@ -45,7 +43,7 @@ import {
   YAxis,
   CartesianGrid,
 } from 'recharts';
-import { useForm } from 'react-hook-form';
+import { useForm, type Resolver } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import dayjs, { Dayjs } from 'dayjs';
@@ -104,11 +102,12 @@ export default function InvestmentsPage() {
     reset,
     watch,
   } = useForm<FormData>({
-    resolver: yupResolver(investmentSchema) as any,
+    resolver: yupResolver(investmentSchema) as Resolver<FormData>,
   });
 
   useEffect(() => {
     loadInvestments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadInvestments = async () => {
@@ -120,7 +119,7 @@ export default function InvestmentsPage() {
       ]);
       setInvestments(investmentsData);
       setPortfolio(portfolioData);
-    } catch (error) {
+    } catch {
       message.error('Ошибка при загрузке инвестиций');
     } finally {
       setLoading(false);
@@ -148,7 +147,7 @@ export default function InvestmentsPage() {
       await investmentsService.delete(id);
       message.success('Инвестиция удалена');
       loadInvestments();
-    } catch (error) {
+    } catch {
       message.error('Ошибка при удалении инвестиции');
     }
   };
@@ -178,10 +177,9 @@ export default function InvestmentsPage() {
       setModalVisible(false);
       reset();
       loadInvestments();
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при сохранении инвестиции';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при сохранении инвестиции');
     }
   };
 
@@ -199,7 +197,7 @@ export default function InvestmentsPage() {
   };
 
   // Подготовка данных для круговой диаграммы портфеля
-  const portfolioPieData = portfolio?.investments.map((inv, index) => ({
+  const portfolioPieData = portfolio?.investments.map((inv) => ({
     name: inv.assetName,
     value: parseFloat(inv.totalValue || '0'),
     profitLoss: parseFloat(inv.profitLoss || '0'),
@@ -262,7 +260,7 @@ export default function InvestmentsPage() {
     {
       title: 'Прибыль/Убыток',
       key: 'profitLoss',
-      render: (_: any, record: Investment) => {
+      render: (_: unknown, record: Investment) => {
         const profitLoss = parseFloat(record.profitLoss || '0');
         const percentage = record.profitLossPercentage || 0;
         const isProfit = profitLoss >= 0;
@@ -291,7 +289,7 @@ export default function InvestmentsPage() {
     {
       title: 'Действия',
       key: 'actions',
-      render: (_: any, record: Investment) => (
+      render: (_: unknown, record: Investment) => (
         <Space>
           <Button
             type="link"
@@ -418,7 +416,7 @@ export default function InvestmentsPage() {
                         cx="50%"
                         cy="50%"
                         labelLine={false}
-                        label={(props: any) => {
+                        label={(props: { name?: string; percent?: number }) => {
                           const { name, percent } = props;
                           if (!name || percent === undefined) return '';
                           return `${name}: ${(percent * 100).toFixed(0)}%`;

@@ -7,11 +7,9 @@ import {
   Typography,
   Card,
   Button,
-  Form,
   Input,
   Space,
   App,
-  Divider,
   Spin,
   Alert,
 } from 'antd';
@@ -78,6 +76,7 @@ export default function ProfilePage() {
 
   useEffect(() => {
     loadProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadProfile = async () => {
@@ -86,10 +85,9 @@ export default function ProfilePage() {
       const data = await profileService.getProfile();
       setProfile(data);
       setEmailValue('email', data.email);
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при загрузке профиля';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при загрузке профиля');
     } finally {
       setLoading(false);
     }
@@ -103,10 +101,9 @@ export default function ProfilePage() {
       refreshUser();
       message.success('Email успешно обновлен!');
       resetEmail();
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при обновлении email';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при обновлении email');
     } finally {
       setEmailLoading(false);
     }
@@ -121,10 +118,9 @@ export default function ProfilePage() {
       });
       message.success('Пароль успешно изменен!');
       resetPassword();
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при изменении пароля';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при изменении пароля');
     } finally {
       setPasswordLoading(false);
     }

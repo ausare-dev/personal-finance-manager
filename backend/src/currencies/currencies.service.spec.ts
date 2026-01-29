@@ -1,7 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConfigService } from '@nestjs/config';
-import { Repository } from 'typeorm';
 import { CurrenciesService } from './currencies.service';
 import { CurrencyRate } from '../entities/currency-rate.entity';
 
@@ -13,7 +12,6 @@ jest.mock('axios', () => ({
 
 describe('CurrenciesService', () => {
   let service: CurrenciesService;
-  let repository: Repository<CurrencyRate>;
 
   const mockRepository = {
     find: jest.fn(),
@@ -42,9 +40,6 @@ describe('CurrenciesService', () => {
     }).compile();
 
     service = module.get<CurrenciesService>(CurrenciesService);
-    repository = module.get<Repository<CurrencyRate>>(
-      getRepositoryToken(CurrencyRate),
-    );
   });
 
   afterEach(() => {

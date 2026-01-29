@@ -27,15 +27,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
         ? exception.getResponse()
         : 'Internal server error';
 
+    const msgStr =
+      typeof message === 'string'
+        ? message
+        : typeof message === 'object' &&
+            message !== null &&
+            'message' in message
+          ? String((message as { message: unknown }).message)
+          : 'An error occurred';
+
     const errorResponse = {
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: request.url,
       method: request.method,
-      message:
-        typeof message === 'string'
-          ? message
-          : (message as any).message || 'An error occurred',
+      message: msgStr || 'An error occurred',
     };
 
     if (status >= 500) {

@@ -39,6 +39,7 @@ export default function ArticlePage() {
     if (articleId) {
       loadArticle();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleId]);
 
   const loadArticle = async () => {
@@ -129,28 +130,28 @@ export default function ArticlePage() {
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    h1: ({ node, ...props }) => <Title level={1} {...props} />,
-                    h2: ({ node, ...props }) => <Title level={2} {...props} />,
-                    h3: ({ node, ...props }) => <Title level={3} {...props} />,
-                    h4: ({ node, ...props }) => <Title level={4} {...props} />,
-                    h5: ({ node, ...props }) => <Title level={5} {...props} />,
-                    h6: ({ node, ...props }) => <Title level={5} {...props} />,
-                    p: ({ node, ...props }) => (
+                    h1: ({ node: _n, ...props }) => <Title level={1} {...props} />,
+                    h2: ({ node: _n, ...props }) => <Title level={2} {...props} />,
+                    h3: ({ node: _n, ...props }) => <Title level={3} {...props} />,
+                    h4: ({ node: _n, ...props }) => <Title level={4} {...props} />,
+                    h5: ({ node: _n, ...props }) => <Title level={5} {...props} />,
+                    h6: ({ node: _n, ...props }) => <Title level={5} {...props} />,
+                    p: ({ node: _n, ...props }) => (
                       <p style={{ marginBottom: '16px', fontSize: '16px', lineHeight: '1.8' }} {...props} />
                     ),
-                    ul: ({ node, ...props }) => (
+                    ul: ({ node: _n, ...props }) => (
                       <ul style={{ marginBottom: '16px', paddingLeft: '24px' }} {...props} />
                     ),
-                    ol: ({ node, ...props }) => (
+                    ol: ({ node: _n, ...props }) => (
                       <ol style={{ marginBottom: '16px', paddingLeft: '24px' }} {...props} />
                     ),
-                    li: ({ node, ...props }) => (
+                    li: ({ node: _n, ...props }) => (
                       <li style={{ marginBottom: '8px', lineHeight: '1.8' }} {...props} />
                     ),
-                    strong: ({ node, ...props }) => (
+                    strong: ({ node: _n, ...props }) => (
                       <strong style={{ fontWeight: 600 }} {...props} />
                     ),
-                    code: ({ node, inline, ...props }: any) =>
+                    code: ({ node: _n, inline, ...props }: { node?: unknown; inline?: boolean; [k: string]: unknown }) =>
                       inline ? (
                         <code
                           style={{
@@ -177,7 +178,7 @@ export default function ArticlePage() {
                           {...props}
                         />
                       ),
-                    blockquote: ({ node, ...props }) => (
+                    blockquote: ({ node: _n, ...props }) => (
                       <blockquote
                         style={{
                           borderLeft: '4px solid #1890ff',

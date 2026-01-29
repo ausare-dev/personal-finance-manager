@@ -14,7 +14,6 @@ import {
   Col,
   Alert,
   Table,
-  Tag,
   Divider,
   Select,
   Spin,
@@ -28,7 +27,7 @@ import {
   CloseCircleOutlined,
   WalletOutlined,
 } from '@ant-design/icons';
-import type { UploadFile, UploadProps } from 'antd';
+import type { UploadProps } from 'antd';
 import { importExportService, type ImportResponse } from '@/services/import-export.service';
 import { walletsService } from '@/services/wallets.service';
 import type { Wallet } from '@/types';
@@ -59,7 +58,7 @@ export default function ImportExportPage() {
         if (walletsList.length > 0) {
           setSelectedWalletId(walletsList[0].id);
         }
-      } catch (error) {
+      } catch {
         message.error('Не удалось загрузить список кошельков');
       } finally {
         setLoadingWallets(false);
@@ -127,9 +126,9 @@ export default function ImportExportPage() {
       if (result.success === 0 && result.failed === 0) {
         message.info('Нет данных для импорта');
       }
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при импорте файла';
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      const errorMessage = err?.response?.data?.message ?? 'Ошибка при импорте файла';
       message.error(errorMessage);
       setImportResult({
         success: 0,
@@ -152,10 +151,9 @@ export default function ImportExportPage() {
       const filename = `transactions_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.csv`;
       importExportService.downloadFile(blob, filename);
       message.success('Файл CSV успешно экспортирован');
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при экспорте CSV';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при экспорте CSV');
     } finally {
       setCsvExporting(false);
     }
@@ -168,10 +166,9 @@ export default function ImportExportPage() {
       const filename = `transactions_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`;
       importExportService.downloadFile(blob, filename);
       message.success('Файл Excel успешно экспортирован');
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при экспорте Excel';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при экспорте Excel');
     } finally {
       setExcelExporting(false);
     }

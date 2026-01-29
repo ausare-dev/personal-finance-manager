@@ -34,7 +34,7 @@ export function FixResponsiveObserver() {
           }
           super.disconnect();
         }
-      } as any;
+      } as unknown as typeof ResizeObserver;
     }
 
     return () => {

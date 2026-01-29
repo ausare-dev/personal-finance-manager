@@ -40,9 +40,8 @@ export class ImportExportController {
       };
     }
 
-    // Извлекаем walletId из body (FormData)
-    const walletId =
-      req.body && req.body.walletId ? req.body.walletId : undefined;
+    const body = req.body as { walletId?: string } | undefined;
+    const walletId = body?.walletId;
 
     const result = await this.importExportService.importFromCsv(
       file,
@@ -78,9 +77,8 @@ export class ImportExportController {
       };
     }
 
-    // Извлекаем walletId из body (FormData)
-    const walletId =
-      req.body && req.body.walletId ? req.body.walletId : undefined;
+    const body = req.body as { walletId?: string } | undefined;
+    const walletId = body?.walletId;
 
     const result = await this.importExportService.importFromExcel(
       file,

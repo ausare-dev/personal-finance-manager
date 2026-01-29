@@ -119,7 +119,9 @@ export class CurrenciesService implements OnModuleInit {
 
       this.logger.log('Currency rates updated successfully');
     } catch (error) {
-      this.logger.error(`Failed to update currency rates: ${error.message}`);
+      this.logger.error(
+        `Failed to update currency rates: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 
@@ -137,8 +139,12 @@ export class CurrenciesService implements OnModuleInit {
         },
       );
 
-      const rates = response.data.rates;
-      const date = response.data.date;
+      const data = response.data as {
+        rates?: Record<string, number>;
+        date?: string;
+      };
+      const rates = data.rates ?? {};
+      const date = data.date ?? '';
 
       this.logger.log(
         `Updating rates for ${baseCurrency}, date: ${date}, count: ${Object.keys(rates).length}`,
@@ -160,15 +166,11 @@ export class CurrenciesService implements OnModuleInit {
           continue;
         }
 
-        await this.saveOrUpdateRate(
-          baseCurrency,
-          targetCurrency,
-          rate as number,
-        );
+        await this.saveOrUpdateRate(baseCurrency, targetCurrency, rate);
       }
     } catch (error) {
       this.logger.error(
-        `Failed to update rates for ${baseCurrency}: ${error.message}`,
+        `Failed to update rates for ${baseCurrency}: ${error instanceof Error ? error.message : String(error)}`,
       );
     }
   }

@@ -6,7 +6,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Form, Input, Button, Card, Typography, App } from 'antd';
-import { UserOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LockOutlined, MailOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
 import type { RegisterRequest } from '@/types';
@@ -48,12 +48,9 @@ export default function RegisterPage() {
     handleSubmit,
     formState: { errors },
     setValue,
-    watch,
   } = useForm<RegisterFormData>({
     resolver: yupResolver(registerSchema),
   });
-
-  const password = watch('password');
 
   // Редирект если уже авторизован
   useEffect(() => {
@@ -65,14 +62,13 @@ export default function RegisterPage() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       setLoading(true);
-      const { confirmPassword, ...registerData } = data;
+      const { confirmPassword: _cp, ...registerData } = data;
       await registerUser(registerData);
       message.success('Регистрация выполнена успешно! Вход в систему...');
       router.push('/dashboard');
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при регистрации. Попробуйте снова.';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при регистрации. Попробуйте снова.');
     } finally {
       setLoading(false);
     }

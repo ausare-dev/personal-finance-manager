@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { AnalyticsService } from './analytics.service';
 import { Transaction, TransactionType } from '../entities/transaction.entity';
 import { Wallet } from '../entities/wallet.entity';
@@ -8,8 +7,6 @@ import { TransactionsService } from '../transactions/transactions.service';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
-  let transactionRepository: Repository<Transaction>;
-  let walletRepository: Repository<Wallet>;
 
   const mockTransactionRepository = {
     find: jest.fn(),
@@ -49,12 +46,6 @@ describe('AnalyticsService', () => {
     }).compile();
 
     service = module.get<AnalyticsService>(AnalyticsService);
-    transactionRepository = module.get<Repository<Transaction>>(
-      getRepositoryToken(Transaction),
-    );
-    walletRepository = module.get<Repository<Wallet>>(
-      getRepositoryToken(Wallet),
-    );
   });
 
   afterEach(() => {

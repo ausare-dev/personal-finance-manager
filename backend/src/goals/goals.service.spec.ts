@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { GoalsService } from './goals.service';
 import { Goal } from '../entities/goal.entity';
 import { CreateGoalDto } from './dto/create-goal.dto';
@@ -13,7 +12,6 @@ import {
 
 describe('GoalsService', () => {
   let service: GoalsService;
-  let repository: Repository<Goal>;
 
   const futureDate = new Date(Date.now() + 86400000 * 30); // 30 days ahead
 
@@ -37,7 +35,6 @@ describe('GoalsService', () => {
     }).compile();
 
     service = module.get<GoalsService>(GoalsService);
-    repository = module.get<Repository<Goal>>(getRepositoryToken(Goal));
   });
 
   afterEach(() => {

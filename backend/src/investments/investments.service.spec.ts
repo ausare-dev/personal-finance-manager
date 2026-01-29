@@ -1,6 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { InvestmentsService } from './investments.service';
 import { Investment } from '../entities/investment.entity';
 import { CreateInvestmentDto } from './dto/create-investment.dto';
@@ -9,7 +8,6 @@ import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
 describe('InvestmentsService', () => {
   let service: InvestmentsService;
-  let repository: Repository<Investment>;
 
   const purchaseDate = new Date('2024-01-15');
 
@@ -33,9 +31,6 @@ describe('InvestmentsService', () => {
     }).compile();
 
     service = module.get<InvestmentsService>(InvestmentsService);
-    repository = module.get<Repository<Investment>>(
-      getRepositoryToken(Investment),
-    );
   });
 
   afterEach(() => {

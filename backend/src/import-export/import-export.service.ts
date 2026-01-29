@@ -41,15 +41,21 @@ export class ImportExportService {
       });
 
       if (parseResult.errors.length > 0) {
-        throw new BadRequestException(
-          `CSV parsing errors: ${parseResult.errors.map((e) => e.message).join(', ')}`,
-        );
+        const errMsg = parseResult.errors
+          .map((e: { message?: string }) => e.message ?? '')
+          .join(', ');
+        throw new BadRequestException(`CSV parsing errors: ${errMsg}`);
       }
 
-      return this.processImportData(parseResult.data, userId, defaultWalletId);
+      return this.processImportData(
+        parseResult.data as Record<string, unknown>[],
+        userId,
+        defaultWalletId,
+      );
     } catch (error) {
-      this.logger.error(`CSV import failed: ${error.message}`);
-      throw new BadRequestException(`Failed to import CSV: ${error.message}`);
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`CSV import failed: ${msg}`);
+      throw new BadRequestException(`Failed to import CSV: ${msg}`);
     }
   }
 
@@ -67,12 +73,13 @@ export class ImportExportService {
       const worksheet = workbook.Sheets[firstSheetName];
 
       // Конвертировать в JSON
-      const data = XLSX.utils.sheet_to_json<any>(worksheet);
+      const data = XLSX.utils.sheet_to_json(worksheet);
 
       return this.processImportData(data, userId, defaultWalletId);
     } catch (error) {
-      this.logger.error(`Excel import failed: ${error.message}`);
-      throw new BadRequestException(`Failed to import Excel: ${error.message}`);
+      const msg = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Excel import failed: ${msg}`);
+      throw new BadRequestException(`Failed to import Excel: ${msg}`);
     }
   }
 
@@ -80,7 +87,7 @@ export class ImportExportService {
    * Обработка импортируемых данных
    */
   private async processImportData(
-    data: any[],
+    data: Record<string, unknown>[],
     userId: string,
     defaultWalletId?: string,
   ): Promise<ImportResult> {
@@ -105,29 +112,34 @@ export class ImportExportService {
         // Создать транзакцию
         await this.transactionsService.create(transactionData, userId);
         result.success++;
-      } catch (error) {
+      } catch (err: unknown) {
         result.failed++;
-        // Форматируем сообщение об ошибке для лучшей читаемости
         let errorMessage = 'Неизвестная ошибка';
 
-        if (error && typeof error === 'object') {
-          // NestJS exceptions имеют свойство message
-          if (error.message) {
-            errorMessage = error.message;
-          } else if (error.response && error.response.message) {
-            errorMessage = Array.isArray(error.response.message)
-              ? error.response.message.join(', ')
-              : error.response.message;
-          } else if (error.status && error.status === 404) {
+        if (err instanceof Error) {
+          errorMessage = err.message;
+        } else if (err && typeof err === 'object') {
+          const e = err as {
+            message?: string;
+            response?: { message?: string | string[] };
+            status?: number;
+          };
+          if (typeof e.message === 'string') {
+            errorMessage = e.message;
+          } else if (e.response && e.response.message) {
+            errorMessage = Array.isArray(e.response.message)
+              ? e.response.message.join(', ')
+              : String(e.response.message);
+          } else if (e.status === 404) {
             errorMessage = 'Ресурс не найден';
-          } else if (error.status && error.status === 403) {
+          } else if (e.status === 403) {
             errorMessage = 'Доступ запрещен';
           }
-        } else if (typeof error === 'string') {
-          errorMessage = error;
+        } else if (typeof err === 'string') {
+          errorMessage = err;
         }
 
-        // Обработка ошибок PostgreSQL UUID
+        // PostgreSQL UUID and other server errors
         if (
           errorMessage.includes('invalid input syntax for type uuid') ||
           errorMessage.includes('uuid')
@@ -180,49 +192,40 @@ export class ImportExportService {
    * Валидация и преобразование строки данных
    */
   private validateAndTransformRow(
-    row: any,
-    rowNumber: number,
+    row: Record<string, unknown>,
+    _rowNumber: number,
     defaultWalletId?: string,
   ): ImportTransactionDto {
-    // Нормализация названий колонок (case-insensitive)
-    const normalizedRow: any = {};
+    const normalizedRow: Record<string, unknown> = {};
     Object.keys(row).forEach((key) => {
       normalizedRow[key.toLowerCase().trim()] = row[key];
     });
 
-    // Извлечение полей
-    let walletId =
-      normalizedRow.walletid ||
-      normalizedRow['wallet id'] ||
-      normalizedRow.wallet;
-    const amount = normalizedRow.amount;
-    const type = normalizedRow.type;
-    const category = normalizedRow.category;
-    const tags = normalizedRow.tags || normalizedRow.tag;
-    const description =
-      normalizedRow.description || normalizedRow.desc || normalizedRow.note;
-    const date =
-      normalizedRow.date ||
-      normalizedRow.transactiondate ||
-      normalizedRow.datetime;
+    const raw = (k: string): unknown => normalizedRow[k];
+    const rawStr = (k: string): string => {
+      const v = raw(k);
+      if (v == null) return '';
+      if (typeof v === 'string') return v;
+      // CSV/Excel cells: numbers, dates, etc. — allow stringify
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
+      return String(v);
+    };
+    const w1 = rawStr('walletid') || rawStr('wallet id') || rawStr('wallet');
+    let walletIdStr = w1.trim();
 
-    // Нормализуем walletId как строку и проверяем на placeholder
-    const walletIdStr = walletId ? String(walletId).trim() : '';
     const walletIdUpper = walletIdStr.toUpperCase();
     const isPlaceholder =
       !walletIdStr ||
       walletIdUpper === 'WALLET_ID_HERE' ||
       walletIdUpper === 'WALLETID_HERE' ||
-      walletIdUpper === 'WALLET_ID' ||
-      walletIdStr === '';
+      walletIdUpper === 'WALLET_ID';
 
-    // Если walletId не указан, пустой, или это placeholder, используем defaultWalletId
     if (isPlaceholder) {
       if (defaultWalletId) {
         this.logger.debug(
           `Replacing placeholder "${walletIdStr}" with defaultWalletId: ${defaultWalletId}`,
         );
-        walletId = defaultWalletId;
+        walletIdStr = defaultWalletId;
       } else {
         throw new Error(
           'ID кошелька обязателен. Выберите кошелек в интерфейсе перед импортом.',
@@ -232,8 +235,7 @@ export class ImportExportService {
       this.logger.debug(`Using walletId from file: ${walletIdStr}`);
     }
 
-    // Теперь проверяем формат UUID для walletId (после замены placeholder)
-    const finalWalletId = String(walletId).trim();
+    const finalWalletId = walletIdStr.trim();
     const uuidRegex =
       /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(finalWalletId)) {
@@ -242,37 +244,44 @@ export class ImportExportService {
       );
     }
 
-    if (!amount || isNaN(parseFloat(amount))) {
+    const amountStr = rawStr('amount');
+    if (!amountStr || isNaN(parseFloat(amountStr))) {
       throw new Error('Сумма должна быть валидным числом');
     }
-    if (!type || !Object.values(TransactionType).includes(type.toLowerCase())) {
+    const typeStr = rawStr('type').trim().toLowerCase();
+    if (
+      !typeStr ||
+      !Object.values(TransactionType).includes(typeStr as TransactionType)
+    ) {
       throw new Error(
         `Тип транзакции должен быть одним из: ${Object.values(TransactionType).join(', ')}. Используйте 'income' для дохода или 'expense' для расхода.`,
       );
     }
-    if (!category) {
+    const categoryStr = rawStr('category');
+    if (!categoryStr) {
       throw new Error('Категория обязательна для заполнения');
     }
-    if (!date) {
+    const dateValStr =
+      rawStr('date') || rawStr('transactiondate') || rawStr('datetime');
+    if (!dateValStr) {
       throw new Error('Дата обязательна для заполнения');
     }
 
-    // Парсинг даты
     let parsedDate: Date;
     try {
-      parsedDate = new Date(date);
+      parsedDate = new Date(dateValStr);
       if (isNaN(parsedDate.getTime())) {
         throw new Error(
-          `Неверный формат даты: "${date}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`,
+          `Неверный формат даты: "${dateValStr}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`,
         );
       }
-    } catch (error) {
+    } catch {
       throw new Error(
-        `Неверный формат даты: "${date}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`,
+        `Неверный формат даты: "${dateValStr}". Используйте формат ISO 8601, например: 2025-12-01T10:00:00.000Z`,
       );
     }
 
-    // Парсинг тегов
+    const tags = raw('tags') ?? raw('tag');
     let parsedTags: string[] = [];
     if (tags) {
       if (typeof tags === 'string') {
@@ -287,13 +296,16 @@ export class ImportExportService {
       }
     }
 
+    const descriptionStr =
+      rawStr('description') || rawStr('desc') || rawStr('note') || undefined;
+
     return {
       walletId: finalWalletId,
-      amount: parseFloat(amount),
-      type: type.toLowerCase() as TransactionType,
-      category: String(category),
+      amount: parseFloat(amountStr),
+      type: typeStr as TransactionType,
+      category: categoryStr,
       tags: parsedTags.length > 0 ? parsedTags : undefined,
-      description: description ? String(description) : undefined,
+      description: descriptionStr,
       date: parsedDate.toISOString(),
     };
   }

@@ -33,9 +33,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { walletsService } from '@/services/wallets.service';
 import { currenciesService } from '@/services/currencies.service';
-import type { Wallet, CreateWalletDto, UpdateWalletDto } from '@/types';
+import type { Wallet, CreateWalletDto } from '@/types';
 
-const { Title, Text } = Typography;
+const { Title } = Typography;
 const { Option } = Select;
 
 // Схема валидации для формы
@@ -70,12 +70,14 @@ export default function WalletsPage() {
 
   useEffect(() => {
     loadWallets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     if (wallets.length > 0) {
       convertAllBalances();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wallets, baseCurrency]);
 
   const loadWallets = async () => {
@@ -83,7 +85,7 @@ export default function WalletsPage() {
       setLoading(true);
       const data = await walletsService.getAll();
       setWallets(data);
-    } catch (error) {
+    } catch {
       message.error('Ошибка при загрузке кошельков');
     } finally {
       setLoading(false);
@@ -104,8 +106,8 @@ export default function WalletsPage() {
             to: baseCurrency,
           });
           conversions[wallet.id] = result.result;
-        } catch (error) {
-          console.error(`Error converting ${wallet.currency} to ${baseCurrency}:`, error);
+        } catch (e) {
+          console.error(`Error converting ${wallet.currency} to ${baseCurrency}:`, e);
           conversions[wallet.id] = wallet.balance; // Fallback к оригинальному балансу
         }
       }
@@ -132,7 +134,7 @@ export default function WalletsPage() {
       await walletsService.delete(id);
       message.success('Кошелек удален');
       loadWallets();
-    } catch (error) {
+    } catch {
       message.error('Ошибка при удалении кошелька');
     }
   };
@@ -149,10 +151,9 @@ export default function WalletsPage() {
       setModalVisible(false);
       reset();
       loadWallets();
-    } catch (error: any) {
-      const errorMessage =
-        error?.response?.data?.message || 'Ошибка при сохранении кошелька';
-      message.error(errorMessage);
+    } catch (e: unknown) {
+      const err = e as { response?: { data?: { message?: string } } };
+      message.error(err?.response?.data?.message ?? 'Ошибка при сохранении кошелька');
     }
   };
 
@@ -203,7 +204,7 @@ export default function WalletsPage() {
       title: `Баланс (${baseCurrency})`,
       key: 'converted',
       align: 'right' as const,
-      render: (_: any, record: Wallet) => {
+      render: (_: unknown, record: Wallet) => {
         const converted = convertedBalances[record.id] || record.balance;
         return (
           <span
@@ -220,7 +221,7 @@ export default function WalletsPage() {
     {
       title: 'Действия',
       key: 'actions',
-      render: (_: any, record: Wallet) => (
+      render: (_: unknown, record: Wallet) => (
         <Space>
           <Button
             type="link"
