@@ -19,3 +19,9 @@ npm run start
 ## Порты
 
 - Приложение: http://localhost:3001
+
+## Тесты
+
+- **Unit (Vitest):** `npm run test` или `npm run test:run`
+- **E2E (Playwright):** `npm run test:e2e`  
+  Перед E2E запустите backend (`cd backend && npm run start:dev`). При первом запуске выполните `npx playwright install chromium`.

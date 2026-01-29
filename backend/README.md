@@ -16,8 +16,8 @@ npm run build
 npm run start:prod
 
 # Тесты
-npm run test
-npm run test:e2e
+npm run test          # unit-тесты
+npm run test:e2e      # E2E (нужен PostgreSQL, см. TESTING.md)
 ```
 
 ## Порты
