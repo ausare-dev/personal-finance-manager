@@ -81,7 +81,7 @@ export default function BudgetsPage() {
     reset,
     watch,
   } = useForm<CreateBudgetDto>({
-    resolver: yupResolver(budgetSchema) as Resolver<CreateBudgetDto>,
+    resolver: yupResolver(budgetSchema) as unknown as Resolver<CreateBudgetDto>,
   });
 
   useEffect(() => {

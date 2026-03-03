@@ -151,8 +151,9 @@ export default function ArticlePage() {
                     strong: ({ node: _n, ...props }) => (
                       <strong style={{ fontWeight: 600 }} {...props} />
                     ),
-                    code: ({ node: _n, inline, ...props }: { node?: unknown; inline?: boolean; [k: string]: unknown }) =>
-                      inline ? (
+                    code: (props) => {
+                      const { node: _n, inline, ...rest } = props as typeof props & { inline?: boolean };
+                      return inline ? (
                         <code
                           style={{
                             background: '#f5f5f5',
@@ -161,7 +162,7 @@ export default function ArticlePage() {
                             fontFamily: 'monospace',
                             fontSize: '14px',
                           }}
-                          {...props}
+                          {...rest}
                         />
                       ) : (
                         <code
@@ -175,9 +176,10 @@ export default function ArticlePage() {
                             overflow: 'auto',
                             marginBottom: '16px',
                           }}
-                          {...props}
+                          {...rest}
                         />
-                      ),
+                      );
+                    },
                     blockquote: ({ node: _n, ...props }) => (
                       <blockquote
                         style={{

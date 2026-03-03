@@ -108,7 +108,7 @@ export default function TransactionsPage() {
 		reset,
 		watch,
 	} = useForm<CreateTransactionDto>({
-		resolver: yupResolver(transactionSchema) as Resolver<CreateTransactionDto>,
+		resolver: yupResolver(transactionSchema) as unknown as Resolver<CreateTransactionDto>,
 	});
 
 	const walletId = watch('walletId');

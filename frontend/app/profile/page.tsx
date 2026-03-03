@@ -145,7 +145,7 @@ export default function ProfilePage() {
           <Title level={2}>Профиль</Title>
 
           {/* Информация о пользователе */}
-          <Card title="Информация о пользователе" icon={<UserOutlined />}>
+          <Card title={<><UserOutlined style={{ marginRight: 8 }} />Информация о пользователе</>}>
             {profile && (
               <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                 <div>
@@ -173,7 +173,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Изменение email */}
-          <Card title="Изменить email" icon={<MailOutlined />}>
+          <Card title={<><MailOutlined style={{ marginRight: 8 }} />Изменить email</>}>
             <form onSubmit={handleSubmitEmail(onEmailSubmit)}>
               <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                 <div>
@@ -214,7 +214,7 @@ export default function ProfilePage() {
           </Card>
 
           {/* Изменение пароля */}
-          <Card title="Изменить пароль" icon={<LockOutlined />}>
+          <Card title={<><LockOutlined style={{ marginRight: 8 }} />Изменить пароль</>}>
             <form onSubmit={handleSubmitPassword(onPasswordSubmit)}>
               <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                 <Alert

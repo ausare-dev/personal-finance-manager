@@ -54,7 +54,7 @@ import type { Investment, CreateInvestmentDto } from '@/types';
 
 const { Title } = Typography;
 
-// Схема валидации для формы
+// Схема валидации для формы (purchaseDate в форме — Dayjs | null)
 const investmentSchema = yup.object({
   assetName: yup.string().required('Название актива обязательно'),
   quantity: yup
@@ -69,7 +69,7 @@ const investmentSchema = yup.object({
     .number()
     .required('Текущая цена обязательна')
     .positive('Текущая цена должна быть положительной'),
-  purchaseDate: yup.string().required('Дата покупки обязательна'),
+  purchaseDate: yup.mixed().required('Дата покупки обязательна'),
 });
 
 // Цвета для графиков
@@ -102,7 +102,7 @@ export default function InvestmentsPage() {
     reset,
     watch,
   } = useForm<FormData>({
-    resolver: yupResolver(investmentSchema) as Resolver<FormData>,
+    resolver: yupResolver(investmentSchema) as unknown as Resolver<FormData>,
   });
 
   useEffect(() => {

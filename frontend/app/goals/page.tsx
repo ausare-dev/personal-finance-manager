@@ -47,7 +47,7 @@ import type { Goal, CreateGoalDto, UpdateGoalDto } from '@/types';
 
 const { Title, Text } = Typography;
 
-// Схема валидации для формы
+// Схема валидации для формы (deadline в форме — Dayjs | null)
 const goalSchema = yup.object({
   name: yup.string().required('Название цели обязательно'),
   targetAmount: yup
@@ -58,7 +58,7 @@ const goalSchema = yup.object({
     .number()
     .min(0, 'Текущая сумма не может быть отрицательной')
     .optional(),
-  deadline: yup.string().required('Дедлайн обязателен'),
+  deadline: yup.mixed().required('Дедлайн обязателен'),
   interestRate: yup
     .number()
     .min(0, 'Процентная ставка не может быть отрицательной')
@@ -83,7 +83,7 @@ export default function GoalsPage() {
     reset,
     watch,
   } = useForm<FormData>({
-    resolver: yupResolver(goalSchema) as Resolver<FormData>,
+    resolver: yupResolver(goalSchema) as unknown as Resolver<FormData>,
   });
 
   useEffect(() => {
