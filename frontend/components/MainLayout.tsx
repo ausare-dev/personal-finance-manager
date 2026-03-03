@@ -50,7 +50,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const [isMobile, setIsMobile] = useState(false);
 
-	// Применяем тему к документу
 	useEffect(() => {
 		document.documentElement.setAttribute('data-theme', theme);
 	}, [theme]);
@@ -60,8 +59,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 	};
 
 	useEffect(() => {
-		// Используем CSS media query вместо JavaScript для определения мобильного режима
-		// Это предотвращает конфликты с Ant Design responsive hooks
 		if (typeof window === 'undefined') {
 			return;
 		}
@@ -82,17 +79,14 @@ export default function MainLayout({ children }: MainLayoutProps) {
 			}
 		};
 
-		// Проверяем при монтировании
 		handleMediaChange(mediaQuery);
 
-		// Добавляем слушатель
 		if (mediaQuery.addEventListener) {
 			mediaQuery.addEventListener('change', handleMediaChange);
 			return () => {
 				mediaQuery.removeEventListener('change', handleMediaChange);
 			};
 		} else {
-			// Fallback для старых браузеров
 			mediaQuery.addListener(handleMediaChange);
 			return () => {
 				mediaQuery.removeListener(handleMediaChange);
@@ -100,7 +94,6 @@ export default function MainLayout({ children }: MainLayoutProps) {
 		}
 	}, []);
 
-	// Меню навигации
 	const menuItems: MenuProps['items'] = [
 		{
 			key: '/dashboard',
@@ -149,12 +142,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
 		},
 	];
 
-	// Обработчик выбора пункта меню
 	const handleMenuClick = ({ key }: { key: string }) => {
 		router.push(key);
 	};
 
-	// Меню пользователя в Header
 	const userMenuItems: MenuProps['items'] = [
 		{
 			key: 'profile',
@@ -365,7 +356,16 @@ export default function MainLayout({ children }: MainLayoutProps) {
 						borderRadius: 8,
 					}}
 				>
-					<div style={{ maxWidth: '100%', overflowX: 'auto' }}>{children}</div>
+					<div
+						className="main-content-wrapper"
+						style={{
+							maxWidth: '100%',
+							overflowX: 'hidden',
+							overflowY: 'visible',
+						}}
+					>
+						{children}
+					</div>
 				</Content>
 			</Layout>
 		</Layout>

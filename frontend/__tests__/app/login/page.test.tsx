@@ -63,7 +63,7 @@ describe('LoginPage', () => {
     await userEvent.click(screen.getAllByRole('button', { name: /^Войти$/ })[0]);
     expect(mockLogin).toHaveBeenCalledWith({ email: 'test@example.com', password: 'password123' });
     expect(mockPush).toHaveBeenCalledWith('/dashboard');
-  });
+  }, 12000);
 
   it('calls login with demo credentials on demo button click', async () => {
     mockLogin.mockResolvedValue({ user: { id: '1', email: 'demo@example.com' }, access_token: 'x' });

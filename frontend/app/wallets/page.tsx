@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MainLayout from '@/components/MainLayout';
 import {
   Typography,
   Card,
   Button,
-  Table,
   Space,
   Modal,
   Form,
@@ -38,14 +37,22 @@ import type { Wallet, CreateWalletDto } from '@/types';
 const { Title } = Typography;
 const { Option } = Select;
 
-// Схема валидации для формы
 const walletSchema = yup.object({
   name: yup.string().required('Название кошелька обязательно'),
   currency: yup.string().required('Валюта обязательна'),
 });
 
-// Популярные валюты
 const CURRENCIES = ['RUB', 'USD', 'EUR', 'GBP', 'JPY', 'CNY', 'KZT', 'BYN'];
+
+const formatAmount = (amount: string | number, currency: string = 'RUB') => {
+  const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+  const code = (currency || 'RUB').toUpperCase();
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: code,
+    minimumFractionDigits: 2,
+  }).format(num);
+};
 
 export default function WalletsPage() {
   const { message } = App.useApp();
@@ -68,19 +75,7 @@ export default function WalletsPage() {
     resolver: yupResolver(walletSchema),
   });
 
-  useEffect(() => {
-    loadWallets();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (wallets.length > 0) {
-      convertAllBalances();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [wallets, baseCurrency]);
-
-  const loadWallets = async () => {
+  const loadWallets = useCallback(async () => {
     try {
       setLoading(true);
       const data = await walletsService.getAll();
@@ -90,11 +85,10 @@ export default function WalletsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [message]);
 
-  const convertAllBalances = async () => {
+  const convertAllBalances = useCallback(async () => {
     const conversions: Record<string, string> = {};
-    
     for (const wallet of wallets) {
       if (wallet.currency === baseCurrency) {
         conversions[wallet.id] = wallet.balance;
@@ -106,15 +100,23 @@ export default function WalletsPage() {
             to: baseCurrency,
           });
           conversions[wallet.id] = result.result;
-        } catch (e) {
-          console.error(`Error converting ${wallet.currency} to ${baseCurrency}:`, e);
-          conversions[wallet.id] = wallet.balance; // Fallback к оригинальному балансу
+        } catch {
+          conversions[wallet.id] = wallet.balance;
         }
       }
     }
-    
     setConvertedBalances(conversions);
-  };
+  }, [wallets, baseCurrency]);
+
+  useEffect(() => {
+    loadWallets();
+  }, [loadWallets]);
+
+  useEffect(() => {
+    if (wallets.length > 0) {
+      convertAllBalances();
+    }
+  }, [wallets, baseCurrency, convertAllBalances]);
 
   const handleCreate = () => {
     setEditingWallet(null);
@@ -153,143 +155,54 @@ export default function WalletsPage() {
       loadWallets();
     } catch (e: unknown) {
       const err = e as { response?: { data?: { message?: string } } };
-      message.error(err?.response?.data?.message ?? 'Ошибка при сохранении кошелька');
+      message.error(
+        err?.response?.data?.message ?? 'Ошибка при сохранении кошелька'
+      );
     }
   };
 
-  const formatAmount = (amount: string | number, currency: string = 'RUB') => {
-    const num = typeof amount === 'string' ? parseFloat(amount) : amount;
-    return new Intl.NumberFormat('ru-RU', {
-      style: 'currency',
-      currency: currency || 'RUB',
-      minimumFractionDigits: 2,
-    }).format(num);
-  };
-
-  // Расчет общей суммы в базовой валюте
   const totalBalance = wallets.reduce((sum, wallet) => {
     const converted = convertedBalances[wallet.id] || wallet.balance;
     return sum + parseFloat(converted);
   }, 0);
 
-  const columns = [
-    {
-      title: 'Название',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Валюта',
-      dataIndex: 'currency',
-      key: 'currency',
-      render: (currency: string) => <Tag>{currency}</Tag>,
-    },
-    {
-      title: 'Баланс (оригинал)',
-      dataIndex: 'balance',
-      key: 'balance',
-      align: 'right' as const,
-      render: (balance: string, record: Wallet) => (
-        <span
-          style={{
-            color: parseFloat(balance) >= 0 ? '#52c41a' : '#ff4d4f',
-            fontWeight: 'bold',
-          }}
-        >
-          {formatAmount(balance, record.currency)}
-        </span>
-      ),
-    },
-    {
-      title: `Баланс (${baseCurrency})`,
-      key: 'converted',
-      align: 'right' as const,
-      render: (_: unknown, record: Wallet) => {
-        const converted = convertedBalances[record.id] || record.balance;
-        return (
-          <span
-            style={{
-              color: parseFloat(converted) >= 0 ? '#52c41a' : '#ff4d4f',
-              fontWeight: 'bold',
-            }}
-          >
-            {formatAmount(converted, baseCurrency)}
-          </span>
-        );
-      },
-    },
-    {
-      title: 'Действия',
-      key: 'actions',
-      render: (_: unknown, record: Wallet) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => handleEdit(record)}
-          >
-            Редактировать
-          </Button>
-          <Popconfirm
-            title="Вы уверены, что хотите удалить этот кошелек?"
-            onConfirm={() => handleDelete(record.id)}
-            okText="Да"
-            cancelText="Нет"
-          >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              Удалить
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+  const balanceColor = (value: string) =>
+    parseFloat(value) >= 0 ? '#52c41a' : '#ff4d4f';
 
   return (
     <ProtectedRoute>
       <MainLayout>
-        <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <Row justify="space-between" align="middle" gutter={[16, 16]}>
-            <Col xs={24} sm={24} md={12}>
+        <div style={{ width: '100%', maxWidth: '100%' }}>
+          <Row gutter={[16, 16]} align="middle" style={{ marginBottom: 24 }}>
+            <Col xs={24} md={12}>
               <Title level={2} style={{ margin: 0 }}>
                 <WalletOutlined /> Кошельки
               </Title>
             </Col>
-            <Col xs={24} sm={24} md={12}>
-              <Space orientation="vertical" style={{ width: '100%' }} size="middle">
+            <Col xs={24} md={12}>
+              <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
                 <Select
                   value={baseCurrency}
                   onChange={setBaseCurrency}
-                  style={{ width: '100%' }}
+                  style={{ width: '100%', minWidth: 120 }}
                   size="large"
                 >
-                  {CURRENCIES.map((curr) => (
-                    <Option key={curr} value={curr}>
-                      {curr}
+                  {CURRENCIES.map((c) => (
+                    <Option key={c} value={c}>
+                      {c}
                     </Option>
                   ))}
                 </Select>
-                <Button
-                  type="primary"
-                  onClick={handleCreate}
-                  block
-                  className="responsive-button"
-                >
-                  <span className="button-text">
-                    <PlusOutlined /> Добавить кошелек
-                  </span>
-                  <span className="button-icon-only">
-                    <PlusOutlined />
-                  </span>
+                <Button type="primary" onClick={handleCreate} block size="large">
+                  <PlusOutlined /> Добавить кошелек
                 </Button>
               </Space>
             </Col>
           </Row>
 
-          {/* Общая статистика */}
-          <Row gutter={16}>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
+          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+            <Col xs={24} sm={12}>
+              <Card size="small">
                 <Statistic
                   title="Всего кошельков"
                   value={wallets.length}
@@ -297,16 +210,14 @@ export default function WalletsPage() {
                 />
               </Card>
             </Col>
-            <Col xs={24} sm={12} md={8}>
-              <Card>
+            <Col xs={24} sm={12}>
+              <Card size="small">
                 <Statistic
                   title={`Общий баланс (${baseCurrency})`}
                   value={totalBalance}
                   precision={2}
                   styles={{
-                    content: {
-                      color: totalBalance >= 0 ? '#52c41a' : '#ff4d4f',
-                    },
+                    content: { color: balanceColor(String(totalBalance)) },
                   }}
                   suffix={baseCurrency}
                 />
@@ -314,29 +225,259 @@ export default function WalletsPage() {
             </Col>
           </Row>
 
-          {/* Список кошельков */}
-          <Card>
+          <Card styles={{ body: { padding: 0 } }}>
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '50px' }}>
+              <div style={{ textAlign: 'center', padding: 48 }}>
                 <Spin size="large" />
               </div>
             ) : wallets.length === 0 ? (
-              <Empty description="Нет кошельков" />
-            ) : (
-              <div style={{ overflowX: 'auto' }}>
-                <Table
-                  dataSource={wallets}
-                  columns={columns}
-                  rowKey="id"
-                  pagination={false}
-                  scroll={{ x: 'max-content' }}
-                />
+              <div style={{ padding: 24 }}>
+                <Empty description="Нет кошельков" />
               </div>
+            ) : (
+              <>
+                <div className="wallets-mobile-list">
+                  {wallets.map((wallet) => {
+                    const converted =
+                      convertedBalances[wallet.id] ?? wallet.balance;
+                    return (
+                      <div
+                        key={wallet.id}
+                        className="wallet-card"
+                        style={{
+                          padding: 16,
+                          borderBottom:
+                            '1px solid var(--ant-color-border-secondary, #f0f0f0)',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'flex-start',
+                            flexWrap: 'wrap',
+                            gap: 12,
+                          }}
+                        >
+                          <div>
+                            <Typography.Text strong style={{ fontSize: 16 }}>
+                              {wallet.name}
+                            </Typography.Text>
+                            <div style={{ marginTop: 4 }}>
+                              <Tag>{wallet.currency}</Tag>
+                            </div>
+                            <div
+                              style={{
+                                marginTop: 8,
+                                color: balanceColor(wallet.balance),
+                                fontWeight: 600,
+                              }}
+                            >
+                              {formatAmount(wallet.balance, wallet.currency)}
+                            </div>
+                            {wallet.currency !== baseCurrency && (
+                              <div
+                                style={{
+                                  marginTop: 4,
+                                  fontSize: 12,
+                                  color: 'var(--ant-color-text-secondary)',
+                                }}
+                              >
+                                {formatAmount(converted, baseCurrency)}
+                              </div>
+                            )}
+                          </div>
+                          <Space size="small">
+                            <Button
+                              type="text"
+                              icon={<EditOutlined />}
+                              onClick={() => handleEdit(wallet)}
+                              title="Редактировать"
+                            />
+                            <Popconfirm
+                              title="Удалить этот кошелек?"
+                              onConfirm={() => handleDelete(wallet.id)}
+                              okText="Да"
+                              cancelText="Нет"
+                              overlayClassName="popconfirm-mobile-large"
+                              overlayStyle={{
+                                minWidth: 260,
+                                width: 'min(280px, calc(100vw - 24px))',
+                              }}
+                            >
+                              <Button
+                                type="text"
+                                danger
+                                icon={<DeleteOutlined />}
+                                title="Удалить"
+                              />
+                            </Popconfirm>
+                          </Space>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="wallets-desktop-table">
+                  <div
+                    style={{
+                      overflowX: 'auto',
+                      overflowY: 'visible',
+                      WebkitOverflowScrolling: 'touch',
+                    }}
+                  >
+                    <table
+                      style={{
+                        width: '100%',
+                        minWidth: 640,
+                        borderCollapse: 'collapse',
+                      }}
+                    >
+                      <thead>
+                        <tr
+                          style={{
+                            borderBottom:
+                              '1px solid var(--ant-color-border-secondary)',
+                            background: 'var(--ant-color-fill-quaternary, #fafafa)',
+                          }}
+                        >
+                          <th
+                            style={{
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Название
+                          </th>
+                          <th
+                            style={{
+                              padding: '12px 16px',
+                              textAlign: 'left',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Валюта
+                          </th>
+                          <th
+                            style={{
+                              padding: '12px 16px',
+                              textAlign: 'right',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Баланс (оригинал)
+                          </th>
+                          <th
+                            style={{
+                              padding: '12px 16px',
+                              textAlign: 'right',
+                              fontWeight: 600,
+                            }}
+                          >
+                            Баланс ({baseCurrency})
+                          </th>
+                          <th
+                            style={{
+                              padding: '12px 16px',
+                              textAlign: 'right',
+                              fontWeight: 600,
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            Действия
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {wallets.map((wallet) => {
+                          const converted =
+                            convertedBalances[wallet.id] ?? wallet.balance;
+                          return (
+                            <tr
+                              key={wallet.id}
+                              style={{
+                                borderBottom:
+                                  '1px solid var(--ant-color-border-secondary)',
+                              }}
+                            >
+                              <td style={{ padding: '12px 16px' }}>
+                                {wallet.name}
+                              </td>
+                              <td style={{ padding: '12px 16px' }}>
+                                <Tag>{wallet.currency}</Tag>
+                              </td>
+                              <td
+                                style={{
+                                  padding: '12px 16px',
+                                  textAlign: 'right',
+                                  color: balanceColor(wallet.balance),
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {formatAmount(wallet.balance, wallet.currency)}
+                              </td>
+                              <td
+                                style={{
+                                  padding: '12px 16px',
+                                  textAlign: 'right',
+                                  color: balanceColor(converted),
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {formatAmount(converted, baseCurrency)}
+                              </td>
+                              <td
+                                style={{
+                                  padding: '12px 16px',
+                                  textAlign: 'right',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                <Space size="small">
+                                  <Button
+                                    type="link"
+                                    size="small"
+                                    icon={<EditOutlined />}
+                                    onClick={() => handleEdit(wallet)}
+                                  >
+                                    Редактировать
+                                  </Button>
+                                  <Popconfirm
+                                    title="Удалить этот кошелек?"
+                                    onConfirm={() => handleDelete(wallet.id)}
+                                    okText="Да"
+                                    cancelText="Нет"
+                                    overlayClassName="popconfirm-mobile-large"
+                                    overlayStyle={{
+                                      minWidth: 260,
+                                      width: 'min(280px, calc(100vw - 24px))',
+                                    }}
+                                  >
+                                    <Button
+                                      type="link"
+                                      size="small"
+                                      danger
+                                      icon={<DeleteOutlined />}
+                                    >
+                                      Удалить
+                                    </Button>
+                                  </Popconfirm>
+                                </Space>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </>
             )}
           </Card>
-        </Space>
+        </div>
 
-        {/* Модальное окно для создания/редактирования */}
         <Modal
           title={editingWallet ? 'Редактировать кошелек' : 'Создать кошелек'}
           open={modalVisible}
@@ -353,31 +494,29 @@ export default function WalletsPage() {
               help={errors.name?.message}
             >
               <Input
-                placeholder="Введите название кошелька"
+                placeholder="Название кошелька"
                 {...register('name')}
                 onChange={(e) => setValue('name', e.target.value)}
               />
             </Form.Item>
-
             <Form.Item
               label="Валюта"
               validateStatus={errors.currency ? 'error' : ''}
               help={errors.currency?.message}
             >
               <Select
-                placeholder="Выберите валюту"
+                placeholder="Валюта"
                 value={editingWallet?.currency}
-                onChange={(value) => setValue('currency', value)}
+                onChange={(v) => setValue('currency', v)}
                 style={{ width: '100%' }}
               >
-                {CURRENCIES.map((curr) => (
-                  <Option key={curr} value={curr}>
-                    {curr}
+                {CURRENCIES.map((c) => (
+                  <Option key={c} value={c}>
+                    {c}
                   </Option>
                 ))}
               </Select>
             </Form.Item>
-
             <Form.Item>
               <Space>
                 <Button type="primary" htmlType="submit">
@@ -392,4 +531,3 @@ export default function WalletsPage() {
     </ProtectedRoute>
   );
 }
-

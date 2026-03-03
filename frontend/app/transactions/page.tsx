@@ -53,7 +53,6 @@ const { Option } = Select;
 const { RangePicker } = DatePicker;
 const { TextArea } = Input;
 
-// Схема валидации для формы
 const transactionSchema = yup.object({
 	walletId: yup.string().required('Кошелек обязателен'),
 	amount: yup
@@ -67,7 +66,6 @@ const transactionSchema = yup.object({
 	tags: yup.array().of(yup.string()).nullable().optional(),
 });
 
-// Популярные категории
 const CATEGORIES = [
 	'Продукты',
 	'Транспорт',
@@ -127,17 +125,14 @@ export default function TransactionsPage() {
 		}
 	};
 
-	// Используем useRef для отслеживания предыдущих значений фильтров
 	const prevFiltersRef = useRef<string>('');
 	const isLoadingRef = useRef(false);
 	
 	useEffect(() => {
-		// Предотвращаем параллельные запросы
 		if (isLoadingRef.current) {
 			return;
 		}
 		
-		// Создаем строковое представление фильтров для сравнения
 		const filtersKey = JSON.stringify({
 			page: filters.page,
 			limit: filters.limit,
@@ -148,11 +143,9 @@ export default function TransactionsPage() {
 			endDate: filters.endDate || null,
 		});
 		
-		// Вызываем loadTransactions только если фильтры действительно изменились
 		if (prevFiltersRef.current !== filtersKey) {
 			prevFiltersRef.current = filtersKey;
 			
-			// Загружаем транзакции асинхронно
 			const loadData = async () => {
 				if (isLoadingRef.current) return;
 				
@@ -165,7 +158,6 @@ export default function TransactionsPage() {
 					);
 					
 					setTransactions(prev => {
-						// Проверяем, изменились ли данные перед обновлением
 						const dataStr = JSON.stringify(response.data);
 						const prevStr = JSON.stringify(prev);
 						if (dataStr === prevStr) {
@@ -174,7 +166,6 @@ export default function TransactionsPage() {
 						return response.data;
 					});
 					setPagination(prev => {
-						// Проверяем, изменились ли значения перед обновлением
 						if (prev.current === response.page && 
 						    prev.pageSize === response.limit && 
 						    prev.total === response.total) {
@@ -209,7 +200,6 @@ export default function TransactionsPage() {
 				filters
 			);
 			setTransactions(prev => {
-				// Проверяем, изменились ли данные перед обновлением
 				const dataStr = JSON.stringify(response.data);
 				const prevStr = JSON.stringify(prev);
 				if (dataStr === prevStr) {
@@ -218,7 +208,6 @@ export default function TransactionsPage() {
 				return response.data;
 			});
 			setPagination(prev => {
-				// Проверяем, изменились ли значения перед обновлением
 				if (prev.current === response.page && 
 				    prev.pageSize === response.limit && 
 				    prev.total === response.total) {
@@ -286,24 +275,20 @@ export default function TransactionsPage() {
 
 	const handleFilterChange = (key: keyof FilterTransactionDto, value: FilterTransactionDto[keyof FilterTransactionDto]) => {
 		setFilters(prev => {
-			// Проверяем, изменилось ли значение
 			if (prev[key] === value && key !== 'page') {
-				return prev; // Возвращаем тот же объект, если значение не изменилось
+				return prev;
 			}
 			return {
 				...prev,
 				[key]: value,
-				page: 1, // Сбрасываем на первую страницу при изменении фильтров
+				page: 1,
 			};
 		});
 	};
 
 	const handleSearch = () => {
-		// Фильтрация по описанию происходит на клиенте через filteredTransactions
-		// Не нужно вызывать loadTransactions
 	};
 
-	// Фильтрация транзакций по поисковому запросу на клиенте
 	const filteredTransactions = searchDescription
 		? transactions.filter(t =>
 				t.description?.toLowerCase().includes(searchDescription.toLowerCase())
@@ -312,16 +297,15 @@ export default function TransactionsPage() {
 
 	const handleResetFilters = () => {
 		setFilters(prev => {
-			// Проверяем, нужно ли сбрасывать
 			const resetFilters = { page: 1, limit: 10 };
 			if (prev.page === resetFilters.page && 
 			    prev.limit === resetFilters.limit && 
 			    !prev.type && 
 			    !prev.category && 
 			    !prev.walletId && 
-			    !prev.startDate && 
-			    !prev.endDate) {
-				return prev; // Уже сброшено
+				!prev.startDate && 
+				!prev.endDate) {
+				return prev;
 			}
 			return resetFilters;
 		});
@@ -330,9 +314,8 @@ export default function TransactionsPage() {
 
 	const handleTableChange = (page: number, pageSize: number) => {
 		setFilters(prev => {
-			// Проверяем, изменились ли значения
 			if (prev.page === page && prev.limit === pageSize) {
-				return prev; // Возвращаем тот же объект, если значения не изменились
+				return prev;
 			}
 			return {
 				...prev,
@@ -344,9 +327,10 @@ export default function TransactionsPage() {
 
 	const formatAmount = (amount: string | number, currency: string = 'RUB') => {
 		const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+		const code = (currency || 'RUB').toUpperCase();
 		return new Intl.NumberFormat('ru-RU', {
 			style: 'currency',
-			currency: currency || 'RUB',
+			currency: code,
 			minimumFractionDigits: 2,
 		}).format(num);
 	};
@@ -401,7 +385,7 @@ export default function TransactionsPage() {
 			dataIndex: 'tags',
 			key: 'tags',
 			render: (tags: string[]) => (
-				<Space size={[0, 8]} wrap>
+				<Space size={[8, 8]} wrap>
 					{tags?.map((tag, index) => (
 						<Tag key={index}>{tag}</Tag>
 					))}
@@ -484,7 +468,6 @@ export default function TransactionsPage() {
 						</Col>
 					</Row>
 
-					{/* Фильтры */}
 					<Card>
 						<Row gutter={[16, 16]}>
 							<Col xs={24} sm={12} md={6}>
@@ -546,7 +529,6 @@ export default function TransactionsPage() {
 												const newStartDate = startDate.toISOString();
 												const newEndDate = endDate.toISOString();
 												setFilters(prev => {
-													// Проверяем, изменились ли даты
 													if (prev.startDate === newStartDate && prev.endDate === newEndDate && prev.page === 1) {
 														return prev;
 													}
@@ -559,7 +541,6 @@ export default function TransactionsPage() {
 												});
 											} else {
 												setFilters(prev => {
-													// Проверяем, были ли даты уже undefined
 													if (!prev.startDate && !prev.endDate && prev.page === 1) {
 														return prev;
 													}
@@ -600,7 +581,6 @@ export default function TransactionsPage() {
 						</Row>
 					</Card>
 
-					{/* Таблица транзакций */}
 					<Card>
 						{loading ? (
 							<div style={{ textAlign: 'center', padding: '50px' }}>
@@ -610,7 +590,6 @@ export default function TransactionsPage() {
 							<Empty description='Нет транзакций' />
 						) : (
 							<>
-								{/* Десктопная таблица */}
 								<div className="desktop-table">
 									<Table
 										dataSource={filteredTransactions}
@@ -629,7 +608,6 @@ export default function TransactionsPage() {
 									/>
 								</div>
 								
-								{/* Мобильные карточки */}
 								<div className="mobile-cards">
 									<Space orientation="vertical" size="middle" style={{ width: '100%' }}>
 										{filteredTransactions.map((transaction) => {
@@ -706,7 +684,7 @@ export default function TransactionsPage() {
 														</Row>
 														{transaction.tags && transaction.tags.length > 0 && (
 															<div>
-																<Space size={[0, 8]} wrap>
+																<Space size={[8, 8]} wrap>
 																	{transaction.tags.map((tag, index) => (
 																		<Tag key={index} style={{ fontSize: '12px' }}>{tag}</Tag>
 																	))}
@@ -719,7 +697,6 @@ export default function TransactionsPage() {
 										})}
 									</Space>
 									
-									{/* Пагинация для мобильных */}
 									{pagination.total > 0 && (
 										<div style={{ marginTop: 16, textAlign: 'center' }}>
 											<Space>
@@ -752,7 +729,6 @@ export default function TransactionsPage() {
 					</Card>
 				</Space>
 
-				{/* Модальное окно для создания/редактирования */}
 				<Modal
 					title={
 						editingTransaction

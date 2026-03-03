@@ -6,6 +6,7 @@ import { Budget, BudgetPeriod } from '../entities/budget.entity';
 import { Goal } from '../entities/goal.entity';
 import { Investment } from '../entities/investment.entity';
 import { CurrencyRate } from '../entities/currency-rate.entity';
+import * as bcrypt from 'bcrypt';
 
 export async function seedDatabase(dataSource: DataSource): Promise<void> {
   const userRepository = dataSource.getRepository(User);
@@ -21,16 +22,22 @@ export async function seedDatabase(dataSource: DataSource): Promise<void> {
     where: { email: 'test@example.com' },
   });
   if (existingUser) {
-    console.log('Seed data already exists. Skipping...');
+    // Обновляем пароль на хеш, если был сохранён в открытом виде (для входа после пересоздания БД)
+    if (!existingUser.password.startsWith('$2')) {
+      existingUser.password = await bcrypt.hash('password123', 10);
+      await userRepository.save(existingUser);
+      console.log('Test user password updated to hashed.');
+    } else {
+      console.log('Seed data already exists. Skipping...');
+    }
     return;
   }
 
-  // Create test user
-  // Note: In production, password should be hashed with bcrypt
-  // For testing/development purposes, using plain text password (hashed by UserService in production)
+  // Create test user (пароль хешируем для совместимости с логином)
+  const hashedPassword = await bcrypt.hash('password123', 10);
   const user = userRepository.create({
     email: 'test@example.com',
-    password: 'password123', // Plain text for seeding (will be hashed by UserService.create() in production)
+    password: hashedPassword,
   });
   await userRepository.save(user);
 
@@ -133,7 +140,7 @@ export async function seedDatabase(dataSource: DataSource): Promise<void> {
   });
   await investmentRepository.save(investment);
 
-  // Create currency rates
+  // Create currency rates (пропускаем, если пара уже есть)
   const currencyRates = [
     { fromCurrency: 'USD', toCurrency: 'RUB', rate: 92.5 },
     { fromCurrency: 'EUR', toCurrency: 'RUB', rate: 100.2 },
@@ -141,8 +148,16 @@ export async function seedDatabase(dataSource: DataSource): Promise<void> {
   ];
 
   for (const rateData of currencyRates) {
-    const rate = currencyRateRepository.create(rateData);
-    await currencyRateRepository.save(rate);
+    const exists = await currencyRateRepository.findOne({
+      where: {
+        fromCurrency: rateData.fromCurrency,
+        toCurrency: rateData.toCurrency,
+      },
+    });
+    if (!exists) {
+      const rate = currencyRateRepository.create(rateData);
+      await currencyRateRepository.save(rate);
+    }
   }
 
   console.log('Seed data created successfully!');

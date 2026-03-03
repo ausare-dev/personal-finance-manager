@@ -25,7 +25,6 @@ import { ru } from 'date-fns/locale';
 
 const { Title, Text } = Typography;
 
-// Схемы валидации
 const updateEmailSchema = yup.object({
   email: yup
     .string()
@@ -144,7 +143,6 @@ export default function ProfilePage() {
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Title level={2}>Профиль</Title>
 
-          {/* Информация о пользователе */}
           <Card title={<><UserOutlined style={{ marginRight: 8 }} />Информация о пользователе</>}>
             {profile && (
               <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
@@ -172,7 +170,6 @@ export default function ProfilePage() {
             )}
           </Card>
 
-          {/* Изменение email */}
           <Card title={<><MailOutlined style={{ marginRight: 8 }} />Изменить email</>}>
             <form onSubmit={handleSubmitEmail(onEmailSubmit)}>
               <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
@@ -213,7 +210,6 @@ export default function ProfilePage() {
             </form>
           </Card>
 
-          {/* Изменение пароля */}
           <Card title={<><LockOutlined style={{ marginRight: 8 }} />Изменить пароль</>}>
             <form onSubmit={handleSubmitPassword(onPasswordSubmit)}>
               <Space orientation="vertical" size="middle" style={{ width: '100%' }}>

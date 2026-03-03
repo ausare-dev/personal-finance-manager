@@ -1,4 +1,4 @@
-// API endpoints
+
 export const API_ENDPOINTS = {
   AUTH: {
     REGISTER: '/auth/register',
@@ -52,13 +52,11 @@ export const API_ENDPOINTS = {
   },
 };
 
-// Storage keys
 export const STORAGE_KEYS = {
   ACCESS_TOKEN: 'access_token',
   USER: 'user',
 };
 
-// Pagination
 export const DEFAULT_PAGE_SIZE = 10;
 export const DEFAULT_PAGE = 1;
 

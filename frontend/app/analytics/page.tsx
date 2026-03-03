@@ -34,11 +34,9 @@ import {
 } from 'recharts';
 import {
   BarChartOutlined,
-  DownloadOutlined,
   AimOutlined,
   WalletOutlined,
 } from '@ant-design/icons';
-import { Button } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { analyticsService } from '@/services/analytics.service';
 import { goalsService } from '@/services/goals.service';
@@ -56,7 +54,6 @@ const { Title } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
-// Цвета для графиков
 const COLORS = [
   '#1890ff',
   '#52c41a',
@@ -80,7 +77,6 @@ export default function AnalyticsPage() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
 
-  // Фильтры
   const [dateRange, setDateRange] = useState<[Dayjs | null, Dayjs | null]>([
     dayjs().subtract(30, 'day'),
     dayjs(),
@@ -102,7 +98,6 @@ export default function AnalyticsPage() {
         groupBy,
       };
 
-      // Загружаем данные параллельно
       const [overviewData, incomeExpense, categories, trends, goalsData, portfolioData] =
         await Promise.all([
           analyticsService.getOverview(),
@@ -136,7 +131,6 @@ export default function AnalyticsPage() {
     }).format(num);
   };
 
-  // Подготовка данных для графика доходов/расходов (Line Chart)
   const lineChartData = (Array.isArray(incomeExpenseData) ? incomeExpenseData : []).map((item) => ({
     period: item.period,
     income: parseFloat(item.income),
@@ -144,21 +138,18 @@ export default function AnalyticsPage() {
     net: parseFloat(item.net),
   }));
 
-  // Подготовка данных для круговой диаграммы (Pie Chart)
   const pieChartData = (Array.isArray(categoryData) ? categoryData : []).map((item) => ({
     name: item.category,
     value: Math.abs(parseFloat(item.total)),
     count: item.count,
   }));
 
-  // Подготовка данных для столбчатой диаграммы (Bar Chart)
   const barChartData = (Array.isArray(trendData) ? trendData : []).map((item) => ({
     date: item.date,
     income: parseFloat(item.income),
     expense: Math.abs(parseFloat(item.expense)),
   }));
 
-  // Подготовка данных для графика прогресса целей
   const goalsProgressData = (Array.isArray(goals) ? goals : []).map((goal) => ({
     name: goal.name,
     current: parseFloat(goal.currentAmount),
@@ -166,7 +157,6 @@ export default function AnalyticsPage() {
     progress: goal.progressPercentage || 0,
   }));
 
-  // Подготовка данных для графика инвестиционного портфеля
   const portfolioPieData = portfolio?.investments.map((inv) => ({
     name: inv.assetName,
     value: parseFloat(inv.totalValue || '0'),
@@ -174,13 +164,6 @@ export default function AnalyticsPage() {
     profitLossPercentage: inv.profitLossPercentage || 0,
   })) || [];
 
-  // Функция экспорта графика (опционально - базовый вариант)
-  const exportChart = (_chartId: string, _filename: string) => {
-    message.info('Экспорт графиков будет реализован в следующих версиях');
-    // В будущем можно использовать html2canvas для экспорта
-  };
-
-  // Кастомный Tooltip для графиков
   type TooltipPayloadItem = { name: string; value: number; color?: string };
   const CustomTooltip = ({
     active,
@@ -250,7 +233,6 @@ export default function AnalyticsPage() {
             </Col>
           </Row>
 
-          {/* Общая статистика */}
           {overview && (
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={6}>
@@ -310,7 +292,6 @@ export default function AnalyticsPage() {
             </div>
           ) : (
             <>
-              {/* График доходов и расходов (Line Chart) */}
               <Card title="Динамика доходов и расходов">
                 <div style={{ width: '100%', height: 300, minHeight: 250 }}>
                   <ResponsiveContainer width="100%" height="100%">
@@ -361,7 +342,6 @@ export default function AnalyticsPage() {
               </Card>
 
               <Row gutter={[16, 16]}>
-                {/* Круговая диаграмма по категориям (Pie Chart) */}
                 <Col xs={24} md={24} lg={12}>
                   <Card title="Расходы по категориям">
                     {pieChartData.length > 0 ? (
@@ -412,7 +392,6 @@ export default function AnalyticsPage() {
                   </Card>
                 </Col>
 
-                {/* Столбчатая диаграмма динамики (Bar Chart) */}
                 <Col xs={24} md={24} lg={12}>
                   <Card title="Тренды доходов и расходов">
                     {barChartData.length > 0 ? (
@@ -449,20 +428,8 @@ export default function AnalyticsPage() {
                 </Col>
               </Row>
 
-              {/* График трендов с областью (Area Chart) */}
               {trendData.length > 0 && (
-                <Card
-                  title="Тренды доходов и расходов"
-                  extra={
-                    <Button
-                      icon={<DownloadOutlined />}
-                      onClick={() => exportChart('trends-chart', 'trends')}
-                      size="small"
-                    >
-                      Экспорт
-                    </Button>
-                  }
-                >
+                <Card title="Тренды доходов и расходов">
                   <ResponsiveContainer width="100%" height={300}>
                     <AreaChart data={barChartData}>
                       <defs>
@@ -506,7 +473,6 @@ export default function AnalyticsPage() {
                 </Card>
               )}
 
-              {/* График прогресса целей */}
               {goals.length > 0 && (
                 <Card
                   title={
@@ -514,15 +480,6 @@ export default function AnalyticsPage() {
                       <AimOutlined />
                       <span>Прогресс финансовых целей</span>
                     </Space>
-                  }
-                  extra={
-                    <Button
-                      icon={<DownloadOutlined />}
-                      onClick={() => exportChart('goals-chart', 'goals')}
-                      size="small"
-                    >
-                      Экспорт
-                    </Button>
                   }
                 >
                   <div style={{ width: '100%', height: 300, minHeight: 250 }}>
@@ -556,25 +513,21 @@ export default function AnalyticsPage() {
                 </Card>
               )}
 
-              {/* График инвестиционного портфеля */}
               {portfolio && portfolioPieData.length > 0 && (
-                <Row gutter={[16, 16]}>
+                <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
                   <Col xs={24} md={24} lg={12}>
                     <Card
+                      style={{ height: '100%' }}
+                      className="portfolio-distribution-card"
                       title={
-                        <Space>
+                        <Space align="start" size="small">
                           <WalletOutlined />
-                          <span>Распределение инвестиционного портфеля</span>
+                          <span>
+                            Распределение инвестиционного
+                            <br />
+                            портфеля
+                          </span>
                         </Space>
-                      }
-                      extra={
-                        <Button
-                          icon={<DownloadOutlined />}
-                          onClick={() => exportChart('portfolio-chart', 'portfolio')}
-                          size="small"
-                        >
-                          Экспорт
-                        </Button>
                       }
                     >
                       <div style={{ width: '100%', height: 300, minHeight: 250 }}>
@@ -613,56 +566,84 @@ export default function AnalyticsPage() {
                     </Card>
                   </Col>
                   <Col xs={24} md={24} lg={12}>
-                    <Card title="Статистика портфеля">
-                      <Space orientation="vertical" style={{ width: '100%' }} size="large">
-                        <Statistic
-                          title="Общая стоимость"
-                          value={parseFloat(portfolio.totalValue)}
-                          precision={2}
-                          suffix="₽"
-                          styles={{ content: { color: '#1890ff' } }}
-                        />
-                        <Statistic
-                          title="Общая стоимость покупки"
-                          value={parseFloat(portfolio.totalCost)}
-                          precision={2}
-                          suffix="₽"
-                        />
-                        <Statistic
-                          title="Прибыль/Убыток"
-                          value={parseFloat(portfolio.profitLoss || '0') || 0}
-                          precision={2}
-                          suffix="₽"
-                          styles={{
-                            content: {
-                              color:
+                    <Card title="Статистика портфеля" style={{ height: '100%' }} className="portfolio-stats-card">
+                      <Row gutter={[16, 16]} className="portfolio-stats-row">
+                        <Col xs={24} sm={12} className="portfolio-stats-col">
+                          <Space orientation="vertical" size="large" className="portfolio-stats-space">
+                            <Statistic
+                              title="Общая стоимость"
+                              value={parseFloat(portfolio.totalValue)}
+                              precision={2}
+                              suffix="₽"
+                              styles={{ content: { color: '#1890ff' } }}
+                            />
+                            <Statistic
+                              title="Общая стоимость покупки"
+                              value={parseFloat(portfolio.totalCost)}
+                              precision={2}
+                              suffix="₽"
+                            />
+                            <Statistic
+                              title="Количество активов"
+                              value={portfolio.investments?.length ?? 0}
+                              suffix="шт."
+                            />
+                          </Space>
+                        </Col>
+                        <Col xs={24} sm={12} className="portfolio-stats-col">
+                          <Space orientation="vertical" size="large" className="portfolio-stats-space">
+                            <Statistic
+                              title="Прибыль/Убыток"
+                              value={parseFloat(portfolio.profitLoss || '0') || 0}
+                              precision={2}
+                              suffix="₽"
+                              styles={{
+                                content: {
+                                  color:
+                                    parseFloat(portfolio.profitLoss || '0') >= 0
+                                      ? '#52c41a'
+                                      : '#f5222d',
+                                },
+                              }}
+                            />
+                            <Statistic
+                              title="Процент прибыли/убытка"
+                              value={portfolio.profitLossPercentage}
+                              precision={2}
+                              suffix="%"
+                              styles={{
+                                content: {
+                                  color:
+                                    portfolio.profitLossPercentage >= 0
+                                      ? '#52c41a'
+                                      : '#f5222d',
+                                },
+                              }}
+                            />
+                            <Statistic
+                              title="Статус портфеля"
+                              value={
                                 parseFloat(portfolio.profitLoss || '0') >= 0
-                                  ? '#52c41a'
-                                  : '#f5222d',
-                            },
-                          }}
-                        />
-                        <Statistic
-                          title="Процент прибыли/убытка"
-                          value={portfolio.profitLossPercentage}
-                          precision={2}
-                          suffix="%"
-                          styles={{
-                            content: {
-                              color:
-                                portfolio.profitLossPercentage >= 0
-                                  ? '#52c41a'
-                                  : '#f5222d',
-                            },
-                          }}
-                        />
-                      </Space>
+                                  ? 'Прибыльный'
+                                  : 'Убыточный'
+                              }
+                              styles={{
+                                content: {
+                                  color:
+                                    parseFloat(portfolio.profitLoss || '0') >= 0
+                                      ? '#52c41a'
+                                      : '#f5222d',
+                                },
+                              }}
+                            />
+                          </Space>
+                        </Col>
+                      </Row>
                     </Card>
                   </Col>
                 </Row>
               )}
 
-              {/* Детальная таблица по категориям */}
               {categoryData.length > 0 && (
                 <Card title="Детализация по категориям">
                   <Row gutter={[16, 16]}>

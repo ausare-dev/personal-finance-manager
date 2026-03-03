@@ -72,8 +72,7 @@ export class ImportExportService {
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
 
-      // Конвертировать в JSON
-      const data = XLSX.utils.sheet_to_json(worksheet) as Record<string, unknown>[];
+      const data = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet);
 
       return this.processImportData(data, userId, defaultWalletId);
     } catch (error) {

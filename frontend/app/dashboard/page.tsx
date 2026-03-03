@@ -45,8 +45,7 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     try {
       setLoading(true);
-      
-      // Загружаем данные параллельно
+
       const [overviewData, walletsData, transactionsData] = await Promise.all([
         analyticsService.getOverview(),
         walletsService.getAll(),
@@ -63,17 +62,16 @@ export default function DashboardPage() {
     }
   };
 
-  // Форматирование суммы
   const formatAmount = (amount: string | number, currency: string = 'RUB') => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount;
+    const code = (currency || 'RUB').toUpperCase();
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
-      currency: currency || 'RUB',
+      currency: code,
       minimumFractionDigits: 2,
     }).format(num);
   };
 
-  // Колонки для таблицы транзакций
   const transactionColumns = [
     {
       title: 'Дата',
@@ -110,8 +108,8 @@ export default function DashboardPage() {
       dataIndex: 'amount',
       key: 'amount',
       align: 'right' as const,
+      width: 130,
       render: (amount: string, record: Transaction) => {
-        // Находим валюту кошелька для транзакции
         const wallet = wallets.find((w) => w.id === record.walletId);
         const currency = wallet?.currency || 'RUB';
         
@@ -152,10 +150,9 @@ export default function DashboardPage() {
             </Title>
           </div>
 
-          {/* Карточки общей статистики */}
-          <Row gutter={[16, 16]}>
+          <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
+              <Card style={{ height: '100%' }}>
                 <Statistic
                   title="Общий доход"
                   value={overview?.totalIncome || 0}
@@ -167,7 +164,7 @@ export default function DashboardPage() {
               </Card>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
+              <Card style={{ height: '100%' }}>
                 <Statistic
                   title="Общий расход"
                   value={overview?.totalExpense || 0}
@@ -179,7 +176,7 @@ export default function DashboardPage() {
               </Card>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
+              <Card style={{ height: '100%' }}>
                 <Statistic
                   title="Чистый баланс"
                   value={overview?.netBalance || 0}
@@ -198,7 +195,7 @@ export default function DashboardPage() {
               </Card>
             </Col>
             <Col xs={24} sm={12} lg={6}>
-              <Card>
+              <Card style={{ height: '100%' }}>
                 <Statistic
                   title="Кошельков"
                   value={overview?.walletCount || 0}
@@ -212,7 +209,6 @@ export default function DashboardPage() {
           </Row>
 
           <Row gutter={[16, 16]}>
-            {/* Кошельки */}
             <Col xs={24} lg={12}>
               <Card
                 title={
@@ -264,9 +260,9 @@ export default function DashboardPage() {
               </Card>
             </Col>
 
-            {/* Последние транзакции */}
             <Col xs={24} md={24} lg={12}>
               <Card
+                className="last-transactions-card"
                 title={
                   <Space>
                     <TransactionOutlined />
@@ -278,7 +274,7 @@ export default function DashboardPage() {
                 {recentTransactions.length === 0 ? (
                   <Empty description="Нет транзакций" />
                 ) : (
-                  <div style={{ overflowX: 'auto' }}>
+                  <div style={{ overflowX: 'hidden' }}>
                     <Table
                       dataSource={recentTransactions}
                       columns={transactionColumns}

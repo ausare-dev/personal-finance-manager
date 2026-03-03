@@ -54,7 +54,6 @@ import type { Investment, CreateInvestmentDto } from '@/types';
 
 const { Title } = Typography;
 
-// Схема валидации для формы (purchaseDate в форме — Dayjs | null)
 const investmentSchema = yup.object({
   assetName: yup.string().required('Название актива обязательно'),
   quantity: yup
@@ -72,7 +71,6 @@ const investmentSchema = yup.object({
   purchaseDate: yup.mixed().required('Дата покупки обязательна'),
 });
 
-// Цвета для графиков
 const COLORS = [
   '#1890ff',
   '#52c41a',
@@ -196,7 +194,6 @@ export default function InvestmentsPage() {
     return format(new Date(date), 'dd.MM.yyyy', { locale: ru });
   };
 
-  // Подготовка данных для круговой диаграммы портфеля
   const portfolioPieData = portfolio?.investments.map((inv) => ({
     name: inv.assetName,
     value: parseFloat(inv.totalValue || '0'),
@@ -204,14 +201,12 @@ export default function InvestmentsPage() {
     profitLossPercentage: inv.profitLossPercentage || 0,
   })) || [];
 
-  // Подготовка данных для столбчатой диаграммы прибыли/убытка
   const profitLossBarData = investments.map((inv) => ({
     name: inv.assetName,
     profitLoss: parseFloat(inv.profitLoss || '0'),
     profitLossPercentage: inv.profitLossPercentage || 0,
   }));
 
-  // Колонки таблицы
   const columns = [
     {
       title: 'Актив',
@@ -317,24 +312,29 @@ export default function InvestmentsPage() {
     <ProtectedRoute>
       <MainLayout>
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <Row justify="space-between" align="middle">
-            <Col>
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={12}>
               <Title level={2}>
                 <WalletOutlined /> Инвестиции
               </Title>
             </Col>
-            <Col>
+            <Col xs={24} sm={24} md={12} style={{ textAlign: 'right' }}>
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
                 onClick={handleCreate}
+                block
+                className="responsive-button"
               >
-                Добавить инвестицию
+                <span className="button-text">
+                  <PlusOutlined /> Добавить инвестицию
+                </span>
+                <span className="button-icon-only">
+                  <PlusOutlined />
+                </span>
               </Button>
             </Col>
           </Row>
 
-          {/* Статистика портфеля */}
           {portfolio && (
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={6}>
@@ -404,7 +404,6 @@ export default function InvestmentsPage() {
             </Row>
           )}
 
-          {/* Визуализация портфеля */}
           {portfolio && portfolioPieData.length > 0 && (
             <Row gutter={[16, 16]}>
               <Col xs={24} lg={12}>
@@ -492,8 +491,7 @@ export default function InvestmentsPage() {
             </Row>
           )}
 
-          {/* Список инвестиций */}
-          <Card title="Список инвестиций">
+          <Card title="Список инвестиций" className="investments-list-card">
             {loading ? (
               <div style={{ textAlign: 'center', padding: '50px' }}>
                 <Spin size="large" />
@@ -516,7 +514,6 @@ export default function InvestmentsPage() {
           </Card>
         </Space>
 
-        {/* Модальное окно для создания/редактирования */}
         <Modal
           title={editingInvestment ? 'Редактировать инвестицию' : 'Создать инвестицию'}
           open={modalVisible}

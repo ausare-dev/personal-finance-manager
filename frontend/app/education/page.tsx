@@ -68,14 +68,12 @@ export default function EducationPage() {
   const filterArticles = () => {
     let filtered = [...articles];
 
-    // Фильтр по категории
     if (selectedCategory !== 'all') {
       filtered = filtered.filter(
         (article) => article.category === selectedCategory
       );
     }
 
-    // Поиск по названию и содержимому
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(
@@ -108,7 +106,6 @@ export default function EducationPage() {
             </Col>
           </Row>
 
-          {/* Фильтры и поиск */}
           <Card>
             <Row gutter={[16, 16]}>
               <Col xs={24} sm={12} md={8}>
@@ -144,7 +141,6 @@ export default function EducationPage() {
             </Row>
           </Card>
 
-          {/* Список статей */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '50px' }}>
               <Spin size="large" />
@@ -158,10 +154,11 @@ export default function EducationPage() {
               <Text type="secondary">
                 Найдено статей: {filteredArticles.length}
               </Text>
-              <Row gutter={[16, 16]}>
-                {filteredArticles.map((article) => (
-                  <Col xs={24} sm={12} lg={8} key={article.id}>
-                    <Card
+              <div className="education-articles-grid">
+                <Row gutter={[16, 16]}>
+                  {filteredArticles.map((article) => (
+                    <Col xs={24} sm={12} lg={8} key={article.id}>
+                      <Card
                       hoverable
                       style={{ height: '100%' }}
                       onClick={() => handleArticleClick(article.id)}
@@ -195,7 +192,8 @@ export default function EducationPage() {
                     </Card>
                   </Col>
                 ))}
-              </Row>
+                </Row>
+              </div>
             </>
           )}
         </Space>

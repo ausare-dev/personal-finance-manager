@@ -39,14 +39,12 @@ import type { Budget, CreateBudgetDto, BudgetPeriod } from '@/types';
 const { Title } = Typography;
 const { Option } = Select;
 
-// Схема валидации для формы
 const budgetSchema = yup.object({
   category: yup.string().required('Категория обязательна'),
   limit: yup.number().required('Лимит обязателен').positive('Лимит должен быть положительным'),
   period: yup.string().oneOf(['daily', 'weekly', 'monthly', 'yearly']).required('Период обязателен'),
 });
 
-// Популярные категории
 const CATEGORIES = [
   'Продукты',
   'Транспорт',
@@ -59,7 +57,6 @@ const CATEGORIES = [
   'Прочее',
 ];
 
-// Периоды бюджета
 const PERIODS: { value: BudgetPeriod; label: string }[] = [
   { value: 'daily', label: 'День' },
   { value: 'weekly', label: 'Неделя' },
@@ -94,8 +91,7 @@ export default function BudgetsPage() {
       setLoading(true);
       const data = await budgetsService.getAll();
       setBudgets(data);
-      
-      // Проверяем бюджеты на превышение лимитов и показываем уведомления
+
       checkBudgetLimits(data);
     } catch {
       message.error('Ошибка при загрузке бюджетов');
@@ -189,7 +185,6 @@ export default function BudgetsPage() {
     return periodObj?.label || period;
   };
 
-  // Статистика
   const totalBudgets = budgets.length;
   const exceededBudgets = budgets.filter(
     (b) => b.usagePercentage && b.usagePercentage >= 100
@@ -201,24 +196,29 @@ export default function BudgetsPage() {
     <ProtectedRoute>
       <MainLayout>
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
-          <Row justify="space-between" align="middle">
-            <Col>
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col xs={24} sm={24} md={12}>
               <Title level={2}>
                 <PieChartOutlined /> Бюджеты
               </Title>
             </Col>
-            <Col>
+            <Col xs={24} sm={24} md={12} style={{ textAlign: 'right' }}>
               <Button
                 type="primary"
-                icon={<PlusOutlined />}
                 onClick={handleCreate}
+                block
+                className="responsive-button"
               >
-                Добавить бюджет
+                <span className="button-text">
+                  <PlusOutlined /> Добавить бюджет
+                </span>
+                <span className="button-icon-only">
+                  <PlusOutlined />
+                </span>
               </Button>
             </Col>
           </Row>
 
-          {/* Уведомления о превышении лимитов */}
           {exceededBudgets > 0 && (
             <Alert
               title={`Превышено бюджетов: ${exceededBudgets}`}
@@ -230,7 +230,6 @@ export default function BudgetsPage() {
             />
           )}
 
-          {/* Статистика */}
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={6}>
               <Card>
@@ -278,7 +277,6 @@ export default function BudgetsPage() {
             </Col>
           </Row>
 
-          {/* Список бюджетов */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '50px' }}>
               <Spin size="large" />
@@ -299,40 +297,42 @@ export default function BudgetsPage() {
                 return (
                   <Col xs={24} sm={12} lg={8} key={budget.id}>
                     <Card
+                      className="budget-card"
                       title={
-                        <Space>
-                          <span>{budget.category}</span>
-                          <Tag>{getPeriodLabel(budget.period)}</Tag>
-                        </Space>
-                      }
-                      extra={
-                        <Space>
-                          <Button
-                            type="link"
-                            icon={<EditOutlined />}
-                            onClick={() => handleEdit(budget)}
-                          >
-                            Редактировать
-                          </Button>
-                          <Popconfirm
-                            title="Вы уверены, что хотите удалить этот бюджет?"
-                            onConfirm={() => handleDelete(budget.id)}
-                            okText="Да"
-                            cancelText="Нет"
-                          >
+                        <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                          <Space>
+                            <span>{budget.category}</span>
+                            <Tag>{getPeriodLabel(budget.period)}</Tag>
+                          </Space>
+                          <Space>
                             <Button
                               type="link"
-                              danger
-                              icon={<DeleteOutlined />}
+                              icon={<EditOutlined />}
+                              onClick={() => handleEdit(budget)}
+                              style={{ padding: 0 }}
                             >
-                              Удалить
+                              Редактировать
                             </Button>
-                          </Popconfirm>
+                            <Popconfirm
+                              title="Вы уверены, что хотите удалить этот бюджет?"
+                              onConfirm={() => handleDelete(budget.id)}
+                              okText="Да"
+                              cancelText="Нет"
+                            >
+                              <Button
+                                type="link"
+                                danger
+                                icon={<DeleteOutlined />}
+                                style={{ padding: 0 }}
+                              >
+                                Удалить
+                              </Button>
+                            </Popconfirm>
+                          </Space>
                         </Space>
                       }
                     >
                       <Space orientation="vertical" style={{ width: '100%' }} size="middle">
-                        {/* Progress Bar */}
                         <div>
                           <div
                             style={{
@@ -354,7 +354,6 @@ export default function BudgetsPage() {
                           />
                         </div>
 
-                        {/* Статистика */}
                         <Row gutter={[8, 8]}>
                           <Col span={12}>
                             <div style={{ fontSize: 12, color: '#8c8c8c' }}>
@@ -380,7 +379,6 @@ export default function BudgetsPage() {
                           </Col>
                         </Row>
 
-                        {/* Предупреждение о превышении */}
                         {isExceeded && (
                           <Alert
                             title="Лимит превышен!"
@@ -399,7 +397,6 @@ export default function BudgetsPage() {
           )}
         </Space>
 
-        {/* Модальное окно для создания/редактирования */}
         <Modal
           title={editingBudget ? 'Редактировать бюджет' : 'Создать бюджет'}
           open={modalVisible}

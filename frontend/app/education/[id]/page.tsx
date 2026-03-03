@@ -106,7 +106,6 @@ export default function ArticlePage() {
 
           <Card>
             <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
-              {/* Заголовок и метаданные */}
               <Space orientation="vertical" size="small" style={{ width: '100%' }}>
                 <Space>
                   <Tag color="blue" icon={<BookOutlined />}>
@@ -125,7 +124,6 @@ export default function ArticlePage() {
 
               <Divider />
 
-              {/* Содержимое статьи */}
               <div className="article-content">
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
@@ -173,7 +171,8 @@ export default function ArticlePage() {
                             borderRadius: '4px',
                             fontFamily: 'monospace',
                             fontSize: '14px',
-                            overflow: 'auto',
+                            overflowX: 'hidden',
+                            overflowY: 'auto',
                             marginBottom: '16px',
                           }}
                           {...rest}
@@ -200,7 +199,6 @@ export default function ArticlePage() {
 
               <Divider />
 
-              {/* Футер статьи */}
               <Space>
                 <Button icon={<ArrowLeftOutlined />} onClick={handleBack}>
                   Вернуться к списку

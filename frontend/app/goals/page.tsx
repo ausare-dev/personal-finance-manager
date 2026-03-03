@@ -47,7 +47,6 @@ import type { Goal, CreateGoalDto, UpdateGoalDto } from '@/types';
 
 const { Title, Text } = Typography;
 
-// Схема валидации для формы (deadline в форме — Dayjs | null)
 const goalSchema = yup.object({
   name: yup.string().required('Название цели обязательно'),
   targetAmount: yup
@@ -136,19 +135,14 @@ export default function GoalsPage() {
         return;
       }
 
-      // Проверка, что текущая сумма не превышает целевую
       if (data.currentAmount && data.currentAmount > data.targetAmount) {
         message.error('Текущая сумма не может превышать целевую сумму');
         return;
       }
 
-      // Проверка, что дедлайн в будущем
-      // data.deadline уже проверен на null выше, поэтому можно безопасно работать с ним
-      // Преобразуем в Dayjs объект (оборачиваем в dayjs() для гарантии)
       const deadlineDayjs = dayjs(data.deadline);
       const deadlineDate = deadlineDayjs.toDate();
       const now = dayjs().toDate();
-      // Добавляем 1 минуту к текущему времени для учета времени выполнения
       const nowPlusMinute = new Date(now.getTime() + 60000);
       if (deadlineDate <= nowPlusMinute) {
         message.error('Дедлайн должен быть в будущем');
@@ -156,7 +150,6 @@ export default function GoalsPage() {
       }
 
       if (editingGoal) {
-        // При обновлении используем UpdateGoalDto (все поля опциональные)
         const updateData: UpdateGoalDto = {
           name: data.name,
           targetAmount: data.targetAmount,
@@ -167,8 +160,6 @@ export default function GoalsPage() {
         await goalsService.update(editingGoal.id, updateData);
         message.success('Цель обновлена');
       } else {
-        // При создании используем CreateGoalDto
-        // deadlineDayjs уже определен выше
         const createData: CreateGoalDto = {
           name: data.name,
           targetAmount: data.targetAmount,
@@ -239,7 +230,6 @@ export default function GoalsPage() {
     );
   };
 
-  // Расчет прогнозируемой суммы с учетом процентной ставки
   const calculateProjectedAmount = (goal: Goal): number => {
     const current = parseFloat(goal.currentAmount);
     const rate = parseFloat(goal.interestRate || '0');
@@ -247,15 +237,12 @@ export default function GoalsPage() {
 
     if (days <= 0 || rate === 0) return current;
 
-    // Простой процент: A = P(1 + r*t)
-    // где P - текущая сумма, r - годовая ставка, t - доля года
     const years = days / 365;
     const projected = current * (1 + (rate / 100) * years);
 
     return projected;
   };
 
-  // Статистика
   const totalGoals = goals.length;
   const completedGoals = goals.filter((g) => isGoalCompleted(g)).length;
   const totalTarget = goals.reduce(
@@ -297,7 +284,6 @@ export default function GoalsPage() {
             </Col>
           </Row>
 
-          {/* Статистика */}
           <Row gutter={[16, 16]}>
             <Col xs={24} sm={12} md={6}>
               <Card>
@@ -346,7 +332,6 @@ export default function GoalsPage() {
             </Col>
           </Row>
 
-          {/* Список целей */}
           {loading ? (
             <div style={{ textAlign: 'center', padding: '50px' }}>
               <Spin size="large" />
@@ -371,47 +356,49 @@ export default function GoalsPage() {
                 return (
                   <Col xs={24} sm={12} lg={8} key={goal.id}>
                     <Card
+                      className="goal-card"
                       title={
-                        <Space>
-                          <span>{goal.name}</span>
-                          {isCompleted && (
-                            <Tag color="success" icon={<CheckCircleOutlined />}>
-                              Выполнено
-                            </Tag>
-                          )}
-                          {isOverdue && !isCompleted && (
-                            <Tag color="error">Просрочено</Tag>
-                          )}
-                        </Space>
-                      }
-                      extra={
-                        <Space>
-                          <Button
-                            type="link"
-                            icon={<EditOutlined />}
-                            onClick={() => handleEdit(goal)}
-                          >
-                            Редактировать
-                          </Button>
-                          <Popconfirm
-                            title="Вы уверены, что хотите удалить эту цель?"
-                            onConfirm={() => handleDelete(goal.id)}
-                            okText="Да"
-                            cancelText="Нет"
-                          >
+                        <Space orientation="vertical" size={8} style={{ width: '100%' }}>
+                          <Space wrap>
+                            <span>{goal.name}</span>
+                            {isCompleted && (
+                              <Tag color="success" icon={<CheckCircleOutlined />}>
+                                Выполнено
+                              </Tag>
+                            )}
+                            {isOverdue && !isCompleted && (
+                              <Tag color="error">Просрочено</Tag>
+                            )}
+                          </Space>
+                          <Space>
                             <Button
                               type="link"
-                              danger
-                              icon={<DeleteOutlined />}
+                              icon={<EditOutlined />}
+                              onClick={() => handleEdit(goal)}
+                              style={{ padding: 0 }}
                             >
-                              Удалить
+                              Редактировать
                             </Button>
-                          </Popconfirm>
+                            <Popconfirm
+                              title="Вы уверены, что хотите удалить эту цель?"
+                              onConfirm={() => handleDelete(goal.id)}
+                              okText="Да"
+                              cancelText="Нет"
+                            >
+                              <Button
+                                type="link"
+                                danger
+                                icon={<DeleteOutlined />}
+                                style={{ padding: 0 }}
+                              >
+                                Удалить
+                              </Button>
+                            </Popconfirm>
+                          </Space>
                         </Space>
                       }
                     >
                       <Space orientation="vertical" style={{ width: '100%' }} size="middle">
-                        {/* Progress Bar */}
                         <div>
                           <div
                             style={{
@@ -438,8 +425,7 @@ export default function GoalsPage() {
 
                         <Divider style={{ margin: '12px 0' }} />
 
-                        {/* Основная информация */}
-                        <Descriptions column={1} size="small">
+                        <Descriptions column={1} size="small" className="goal-descriptions">
                           <Descriptions.Item
                             label={
                               <Space>
@@ -473,14 +459,15 @@ export default function GoalsPage() {
                             >
                               {formatDate(goal.deadline)}
                             </Text>
-                            <br />
                             <Text
                               type={daysRemaining < 0 ? 'danger' : 'secondary'}
-                              style={{ fontSize: 12 }}
+                              style={{ fontSize: 12, marginLeft: 4 }}
                             >
+                              (
                               {daysRemaining >= 0
                                 ? `Осталось ${daysRemaining} дней`
                                 : `Просрочено на ${Math.abs(daysRemaining)} дней`}
+                              )
                             </Text>
                           </Descriptions.Item>
 
@@ -501,23 +488,18 @@ export default function GoalsPage() {
                                 label={
                                   <Space>
                                     <ClockCircleOutlined />
-                                    <span>Прогноз с учетом %</span>
+                                    <span>Прогноз к дедлайну (с учётом %)</span>
                                   </Space>
                                 }
                               >
-                                <Text strong>
+                                <Text strong style={{ whiteSpace: 'nowrap' }}>
                                   {formatAmount(projectedAmount)}
-                                </Text>
-                                <br />
-                                <Text type="secondary" style={{ fontSize: 12 }}>
-                                  Прогнозируемая сумма к дедлайну
                                 </Text>
                               </Descriptions.Item>
                             </>
                           )}
                         </Descriptions>
 
-                        {/* Уведомления */}
                         {isOverdue && !isCompleted && (
                           <Alert
                             title="Дедлайн прошел!"
@@ -546,7 +528,6 @@ export default function GoalsPage() {
           )}
         </Space>
 
-        {/* Модальное окно для создания/редактирования */}
         <Modal
           title={editingGoal ? 'Редактировать цель' : 'Создать цель'}
           open={modalVisible}

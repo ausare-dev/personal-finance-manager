@@ -48,13 +48,11 @@ export default function ImportExportPage() {
   const [selectedWalletId, setSelectedWalletId] = useState<string | undefined>(undefined);
   const [loadingWallets, setLoadingWallets] = useState(true);
 
-  // Загружаем список кошельков
   useEffect(() => {
     const loadWallets = async () => {
       try {
         const walletsList = await walletsService.getAll();
         setWallets(walletsList);
-        // Автоматически выбираем первый кошелек, если он есть
         if (walletsList.length > 0) {
           setSelectedWalletId(walletsList[0].id);
         }
@@ -67,26 +65,24 @@ export default function ImportExportPage() {
     loadWallets();
   }, [message]);
 
-  // CSV импорт
   const csvUploadProps: UploadProps = {
     name: 'file',
     accept: '.csv',
     maxCount: 1,
     beforeUpload: (file) => {
       handleImport(file, 'csv');
-      return false; // Предотвращаем автоматическую загрузку
+      return false;
     },
     fileList: [],
   };
 
-  // Excel импорт
   const excelUploadProps: UploadProps = {
     name: 'file',
     accept: '.xlsx,.xls',
     maxCount: 1,
     beforeUpload: (file) => {
       handleImport(file, 'excel');
-      return false; // Предотвращаем автоматическую загрузку
+      return false;
     },
     fileList: [],
   };
@@ -174,7 +170,6 @@ export default function ImportExportPage() {
     }
   };
 
-  // Колонки для таблицы ошибок
   const errorColumns = [
     {
       title: 'Строка',
@@ -195,7 +190,6 @@ export default function ImportExportPage() {
         <Space orientation="vertical" size="large" style={{ width: '100%' }}>
           <Title level={2}>Импорт и экспорт транзакций</Title>
 
-          {/* Выбор кошелька */}
           <Card>
             <Space orientation="vertical" style={{ width: '100%' }} size="middle">
               <Text strong>
@@ -230,10 +224,10 @@ export default function ImportExportPage() {
             </Space>
           </Card>
 
-          <Row gutter={[16, 16]}>
-            {/* Импорт CSV */}
+          <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
             <Col xs={24} lg={12}>
               <Card
+                style={{ height: '100%' }}
                 title={
                   <Space>
                     <FileTextOutlined />
@@ -270,9 +264,9 @@ export default function ImportExportPage() {
               </Card>
             </Col>
 
-            {/* Импорт Excel */}
             <Col xs={24} lg={12}>
               <Card
+                style={{ height: '100%' }}
                 title={
                   <Space>
                     <FileExcelOutlined />
@@ -310,7 +304,6 @@ export default function ImportExportPage() {
             </Col>
           </Row>
 
-          {/* Результаты импорта */}
           {importResult && (
             <Card title="Результаты импорта">
               <Space orientation="vertical" style={{ width: '100%' }} size="middle">
@@ -379,7 +372,6 @@ export default function ImportExportPage() {
 
           <Divider />
 
-          {/* Экспорт */}
           <Card title="Экспорт транзакций">
             <Space orientation="vertical" style={{ width: '100%' }} size="large">
               <Text type="secondary">

@@ -1,5 +1,3 @@
-/* Ant Design стили подключаются автоматически через AntdRegistry */
-
 :root {
   --primary-color: #1890ff;
   --success-color: #52c41a;
@@ -7,7 +5,6 @@
   --error-color: #f5222d;
 }
 
-/* Dark theme variables */
 [data-theme='dark'] {
   --primary-color: #1890ff;
   --success-color: #52c41a;
@@ -20,7 +17,6 @@ html {
   height: 100%;
   overflow-y: auto;
   overflow-x: hidden;
-  /* Предотвращаем изменение размера при прокрутке */
   -webkit-overflow-scrolling: touch;
 }
 
@@ -31,7 +27,6 @@ body {
   padding: 0;
   overflow-x: hidden;
   position: relative;
-  /* Фиксируем размер, чтобы предотвратить изменения */
   box-sizing: border-box;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
@@ -51,13 +46,11 @@ a {
   text-decoration: none;
 }
 
-/* Ant Design customizations */
 .ant-layout {
   min-height: 100%;
   height: 100%;
 }
 
-/* Markdown article content styles */
 .article-content {
   font-size: 16px;
   line-height: 1.8;
@@ -98,7 +91,7 @@ a {
   background: #f5f5f5;
   padding: 12px;
   border-radius: 4px;
-  overflow-x: auto;
+  overflow-x: hidden;
   margin-bottom: 16px;
 }
 
@@ -146,7 +139,6 @@ a {
   background: #262626;
 }
 
-/* Responsive improvements */
 @media (max-width: 768px) {
   .ant-table {
     font-size: 12px;
@@ -173,8 +165,6 @@ a {
     align-items: center;
     justify-content: center;
   }
-  
-  /* Скрыть стандартную иконку Ant Design если она есть */
   .responsive-button .ant-btn-icon {
     display: none !important;
   }
@@ -193,7 +183,6 @@ a {
     font-size: 14px;
   }
   
-  /* Hide table columns on mobile if needed */
   .ant-table-thead > tr > th,
   .ant-table-tbody > tr > td {
     padding: 8px 4px;
@@ -204,72 +193,250 @@ a {
   .responsive-button .button-icon-only {
     display: none !important;
   }
-  
   .responsive-button .button-text {
     display: inline !important;
   }
 }
 
-/* Scroll improvements for tables on mobile */
+.wallets-table-wrapper {
+  overflow-x: hidden;
+}
+
+.wallets-mobile-list {
+  display: block;
+}
+.wallets-desktop-table {
+  display: none;
+}
+@media (min-width: 769px) {
+  .wallets-mobile-list {
+    display: none;
+  }
+  .wallets-desktop-table {
+    display: block;
+  }
+}
+
+@media (max-width: 768px) {
+  .wallets-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .table-actions .button-text {
+    display: none !important;
+  }
+}
+
 @media (max-width: 768px) {
   .ant-table-wrapper {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
   .ant-table {
     min-width: 600px;
   }
 }
 
-/* Improve spacing on mobile */
 @media (max-width: 576px) {
   .ant-space {
     gap: 8px !important;
   }
-  
   .ant-card {
     margin-bottom: 16px;
   }
-  
   .ant-row {
     margin-left: -8px;
     margin-right: -8px;
   }
-  
   .ant-row > .ant-col {
     padding-left: 8px;
     padding-right: 8px;
   }
-  
-  /* Reduce padding on mobile */
   .ant-card-body {
     padding: 16px;
   }
-  
   .ant-modal-body {
     padding: 16px;
   }
-  
   .ant-form-item {
     margin-bottom: 16px;
   }
 }
 
-/* Improve modal responsiveness */
 @media (max-width: 768px) {
   .ant-modal {
     max-width: calc(100% - 32px) !important;
     margin: 16px !important;
   }
-  
   .ant-modal-content {
     max-height: calc(100% - 32px);
     overflow-y: auto;
   }
 }
 
-/* Improve charts on mobile */
+@media (max-width: 768px) {
+  .popconfirm-mobile-large {
+    min-width: 260px !important;
+    max-width: calc(100vw - 24px) !important;
+  }
+  .popconfirm-mobile-large .ant-popover-inner {
+    min-width: 260px !important;
+    padding: 16px 20px 20px !important;
+    border-radius: 10px !important;
+  }
+  .popconfirm-mobile-large .ant-popover-inner-content {
+    padding: 0 !important;
+    min-width: 220px !important;
+    font-size: 17px !important;
+    line-height: 1.4 !important;
+  }
+  .popconfirm-mobile-large .ant-popover-message {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 0 0 2px !important;
+    margin: 0 !important;
+    font-size: 17px !important;
+    line-height: 1.4 !important;
+    border: none !important;
+  }
+  .popconfirm-mobile-large .ant-popover-message-icon {
+    font-size: 20px !important;
+    line-height: 1 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+  .popconfirm-mobile-large .ant-popover-message-icon .anticon {
+    font-size: 20px !important;
+  }
+  .popconfirm-mobile-large .ant-popover-message-title {
+    font-size: 17px !important;
+    line-height: 1.4 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .popconfirm-mobile-large .ant-popover-buttons {
+    margin-top: 18px !important;
+    margin-bottom: 0 !important;
+    display: flex !important;
+    gap: 10px !important;
+    justify-content: flex-end !important;
+  }
+  .popconfirm-mobile-large .ant-popover-buttons .ant-btn {
+    min-height: 42px !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+    line-height: 1.35 !important;
+    border-radius: 8px !important;
+  }
+  .popconfirm-mobile-large [class*='message'] {
+    font-size: 17px !important;
+    line-height: 1.4 !important;
+  }
+  .popconfirm-mobile-large [class*='button'] .ant-btn,
+  .popconfirm-mobile-large .ant-btn {
+    min-height: 42px !important;
+    padding: 10px 20px !important;
+    font-size: 16px !important;
+  }
+  .popconfirm-mobile-large .ant-popover-message [class*='icon'],
+  .popconfirm-mobile-large .ant-popover-message .anticon {
+    font-size: 20px !important;
+  }
+  .popconfirm-mobile-large [class*='popover-inner'],
+  .popconfirm-mobile-large [class*='popconfirm-inner'] {
+    min-width: 260px !important;
+    padding: 16px 20px 20px !important;
+    border-radius: 10px !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .ant-popover {
+    max-width: calc(100vw - 24px) !important;
+  }
+  .ant-popover-inner {
+    min-width: 280px;
+    padding: 20px 24px;
+  }
+  .ant-popover-inner-content {
+    padding: 10px 0 20px !important;
+    font-size: 18px !important;
+  }
+  .ant-popover-message {
+    font-size: 18px !important;
+  }
+  .ant-popover-message-title {
+    font-size: 18px !important;
+  }
+  .ant-popover-buttons .ant-btn {
+    min-height: 46px !important;
+    padding: 10px 24px !important;
+    font-size: 17px !important;
+  }
+}
+
+.budget-card .ant-card-head {
+  padding-top: 16px !important;
+}
+.budget-card .ant-card-head-title {
+  padding-top: 0;
+}
+
+@media (max-width: 768px) {
+  .budgets-page-header .ant-col:last-child {
+    margin-top: 12px;
+  }
+  .budgets-add-button {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .budgets-page-header {
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .goals-page-header .ant-col:last-child {
+    margin-top: 12px;
+  }
+  .goals-add-button {
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+  .goals-page-header {
+    margin-bottom: 8px;
+  }
+}
+
+.goal-card .ant-card-head {
+  padding-top: 16px !important;
+}
+.goal-card .ant-card-head-title {
+  padding-top: 0;
+}
+
+.goal-descriptions .ant-descriptions-item {
+  padding-bottom: 12px !important;
+  display: block !important;
+}
+.goal-descriptions .ant-descriptions-item:last-child {
+  padding-bottom: 0 !important;
+}
+.goal-descriptions .ant-descriptions-item-label {
+  padding-bottom: 4px !important;
+}
+.goal-descriptions .ant-descriptions-item-content {
+  display: block !important;
+}
+.goal-descriptions .ant-descriptions-item-content .ant-typography {
+  white-space: nowrap;
+}
+
 @media (max-width: 768px) {
   .recharts-wrapper {
     font-size: 12px;
@@ -280,7 +447,6 @@ a {
   }
 }
 
-/* Transactions table responsive */
 .desktop-table {
   display: block;
 }
@@ -297,8 +463,6 @@ a {
   .mobile-cards {
     display: block;
   }
-  
-  /* Improve transaction cards on mobile */
   .mobile-cards .ant-card {
     margin-bottom: 12px;
   }
@@ -321,7 +485,117 @@ a {
   }
 }
 
-/* Mobile menu drawer improvements */
+.last-transactions-card .ant-card-body .ant-table-wrapper,
+.last-transactions-card .ant-card-body .ant-table-wrapper .ant-table-content,
+.last-transactions-card .ant-card-body .ant-table-wrapper .ant-table-body {
+  overflow-y: visible !important;
+}
+.last-transactions-card .ant-card-body .ant-table-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden !important;
+}
+.last-transactions-card .ant-card-body .ant-table-wrapper .ant-table-content,
+.last-transactions-card .ant-card-body .ant-table-wrapper .ant-table-body {
+  overflow-x: visible !important;
+}
+.last-transactions-card .ant-card-body .ant-table-wrapper .ant-table-body {
+  margin-bottom: -1px;
+}
+.last-transactions-card .ant-table-container::after {
+  display: none !important;
+}
+
+.investments-list-card .ant-card-body .ant-table-wrapper,
+.investments-list-card .ant-card-body .ant-table-wrapper .ant-table-content,
+.investments-list-card .ant-card-body .ant-table-wrapper .ant-table-body {
+  overflow-y: visible !important;
+}
+.investments-list-card .ant-card-body .ant-table-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden !important;
+}
+.investments-list-card .ant-card-body .ant-table-wrapper .ant-table-content,
+.investments-list-card .ant-card-body .ant-table-wrapper .ant-table-body {
+  overflow-x: visible !important;
+}
+.investments-list-card .ant-card-body .ant-table-wrapper .ant-table-body {
+  margin-bottom: -1px;
+}
+.investments-list-card .ant-table-container::after {
+  display: none !important;
+}
+
+.portfolio-stats-card.ant-card {
+  display: flex;
+  flex-direction: column;
+}
+.portfolio-stats-card .ant-card-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.portfolio-stats-card .ant-card-body .ant-row.portfolio-stats-row {
+  min-height: 0;
+}
+.portfolio-stats-card .ant-card-body .ant-col.portfolio-stats-col {
+  min-height: 0;
+}
+.portfolio-stats-card .ant-card-body .ant-space.portfolio-stats-space {
+  width: 100%;
+}
+
+@media (min-width: 576px) {
+  .portfolio-stats-card .ant-card-body {
+    flex: 1;
+  }
+  .portfolio-stats-card .ant-card-body .ant-row.portfolio-stats-row {
+    flex: 1;
+    height: 100%;
+  }
+  .portfolio-stats-card .ant-card-body .ant-col.portfolio-stats-col {
+    height: 100%;
+  }
+  .portfolio-stats-card .ant-card-body .ant-space.portfolio-stats-space {
+    height: 100%;
+    display: flex !important;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+}
+
+.portfolio-distribution-card .ant-card-head {
+  padding-top: 12px !important;
+}
+.portfolio-distribution-card .ant-card-head-title {
+  padding-top: 0;
+  white-space: normal;
+  word-wrap: break-word;
+  overflow: visible;
+}
+.portfolio-distribution-card .ant-card-head-title .ant-space {
+  flex-wrap: wrap;
+}
+
+.education-articles-grid {
+  padding: 12px 24px 20px 24px;
+  overflow: visible;
+}
+.education-articles-grid .ant-row {
+  margin-left: -12px;
+  margin-right: -12px;
+}
+.education-articles-grid .ant-col {
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 12px;
+  padding-bottom: 12px;
+}
+
+.main-content-wrapper {
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
 .ant-drawer-body {
   padding: 0 !important;
 }
@@ -335,7 +609,6 @@ a {
 }
 
 @media (max-width: 991px) {
-  /* Ensure drawer appears above content */
   .ant-drawer {
     z-index: 1000 !important;
   }
@@ -344,7 +617,6 @@ a {
     z-index: 999 !important;
   }
   
-  /* Improve menu item touch targets on mobile */
   .ant-menu-item {
     padding: 16px 24px !important;
     height: auto !important;
@@ -357,19 +629,15 @@ a {
   }
 }
 
-/* Fix for Ant Design responsive observer infinite loop */
 .ant-row {
-  /* Предотвращаем проблемы с responsive observer */
   will-change: auto;
 }
 
-/* Предотвращаем layout shift */
 #__next {
   min-height: 100%;
   height: 100%;
 }
 
-/* Фиксируем размеры для предотвращения изменений, которые триггерят responsive observer */
 html, body, #__next {
   overflow-x: hidden;
   width: 100%;

@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { TransactionsController } from './transactions.controller';
 import { TransactionsService } from './transactions.service';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { TransactionType } from '../entities/transaction.entity';
 
 describe('TransactionsController', () => {
   let controller: TransactionsController;
@@ -64,7 +65,7 @@ describe('TransactionsController', () => {
       const createTransactionDto: CreateTransactionDto = {
         walletId: 'wallet-1',
         amount: 1000,
-        type: 'expense',
+        type: TransactionType.EXPENSE,
         category: 'Food',
         date: new Date().toISOString(),
       };
