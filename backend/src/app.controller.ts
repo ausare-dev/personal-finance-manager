@@ -27,7 +27,9 @@ export class AppController {
   @ApiOperation({ summary: 'Получить профиль пользователя' })
   @ApiResponse({ status: 200, description: 'Профиль пользователя' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
-  async getProfile(@CurrentUser() user: { id: string; email: string }) {
+  async getProfile(
+    @CurrentUser() user: { id: string; email: string; role?: string },
+  ) {
     const userData = await this.userService.findById(user.id);
     if (!userData) {
       return {
@@ -39,6 +41,7 @@ export class AppController {
     return {
       id: userData.id,
       email: userData.email,
+      role: userData.role,
       createdAt: userData.createdAt,
       updatedAt: userData.updatedAt,
     };
@@ -51,7 +54,7 @@ export class AppController {
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 409, description: 'Email уже используется' })
   async updateEmail(
-    @CurrentUser() user: { id: string; email: string },
+    @CurrentUser() user: { id: string; email: string; role?: string },
     @Body() updateEmailDto: UpdateEmailDto,
   ) {
     const updatedUser = await this.userService.updateEmail(
@@ -75,7 +78,7 @@ export class AppController {
   @ApiResponse({ status: 200, description: 'Пароль успешно изменен' })
   @ApiResponse({ status: 400, description: 'Неверный текущий пароль' })
   async updatePassword(
-    @CurrentUser() user: { id: string; email: string },
+    @CurrentUser() user: { id: string; email: string; role?: string },
     @Body() updatePasswordDto: UpdatePasswordDto,
   ) {
     await this.userService.updatePassword(

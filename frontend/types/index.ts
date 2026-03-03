@@ -21,6 +21,7 @@ export interface AuthResponse {
   user: {
     id: string;
     email: string;
+    role?: string;
   };
 }
 
@@ -228,14 +229,30 @@ export interface Article {
   title: string;
   content: string;
   category: string;
+  summary?: string;
   readCount: number;
   createdAt: string;
+}
+
+export interface CreateArticleDto {
+  title: string;
+  content: string;
+  category: string;
+  summary?: string;
+}
+
+export interface UpdateArticleDto {
+  title?: string;
+  content?: string;
+  category?: string;
+  summary?: string;
 }
 
 // Profile types
 export interface UserProfile {
   id: string;
   email: string;
+  role?: string;
   createdAt: string;
   updatedAt: string;
 }

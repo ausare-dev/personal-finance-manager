@@ -21,6 +21,7 @@ import {
 	DollarOutlined,
 	FileTextOutlined,
 	BookOutlined,
+	EditOutlined,
 	MenuFoldOutlined,
 	MenuUnfoldOutlined,
 	LogoutOutlined,
@@ -140,6 +141,15 @@ export default function MainLayout({ children }: MainLayoutProps) {
 			icon: <BookOutlined />,
 			label: 'Обучение',
 		},
+		...(user?.role === 'admin'
+			? [
+					{
+						key: '/education/admin',
+						icon: <EditOutlined />,
+						label: 'Управление статьями',
+					},
+				]
+			: []),
 	];
 
 	const handleMenuClick = ({ key }: { key: string }) => {

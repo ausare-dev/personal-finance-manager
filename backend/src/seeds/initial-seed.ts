@@ -22,13 +22,25 @@ export async function seedDatabase(dataSource: DataSource): Promise<void> {
     where: { email: 'test@example.com' },
   });
   if (existingUser) {
-    // Обновляем пароль на хеш, если был сохранён в открытом виде (для входа после пересоздания БД)
     if (!existingUser.password.startsWith('$2')) {
       existingUser.password = await bcrypt.hash('password123', 10);
       await userRepository.save(existingUser);
       console.log('Test user password updated to hashed.');
     } else {
       console.log('Seed data already exists. Skipping...');
+    }
+    const existingAdmin = await userRepository.findOne({
+      where: { email: 'admin@example.com' },
+    });
+    if (!existingAdmin) {
+      const adminPassword = await bcrypt.hash('admin123', 10);
+      const adminUser = userRepository.create({
+        email: 'admin@example.com',
+        password: adminPassword,
+        role: 'admin',
+      });
+      await userRepository.save(adminUser);
+      console.log('Admin user created.');
     }
     return;
   }
@@ -40,6 +52,14 @@ export async function seedDatabase(dataSource: DataSource): Promise<void> {
     password: hashedPassword,
   });
   await userRepository.save(user);
+
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  const adminUser = userRepository.create({
+    email: 'admin@example.com',
+    password: adminPassword,
+    role: 'admin',
+  });
+  await userRepository.save(adminUser);
 
   // Create wallets
   const rubWallet = walletRepository.create({

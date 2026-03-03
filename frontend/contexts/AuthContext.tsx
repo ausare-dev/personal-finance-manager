@@ -2,12 +2,14 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService } from '../services/auth.service';
+import { profileService } from '../services/profile.service';
 import { setLogoutCallback } from '../utils/logout-helper';
 import type { LoginRequest, RegisterRequest, AuthResponse } from '../types';
 
 interface User {
   id: string;
   email: string;
+  role?: string;
 }
 
 interface AuthContextType {
@@ -17,7 +19,7 @@ interface AuthContextType {
   login: (data: LoginRequest) => Promise<AuthResponse>;
   register: (data: RegisterRequest) => Promise<AuthResponse>;
   logout: () => void;
-  refreshUser: () => void;
+  refreshUser: () => void | Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -28,13 +30,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Загружаем пользователя из localStorage при инициализации
   useEffect(() => {
-    const loadUser = () => {
+    const loadUser = async () => {
       try {
         const savedUser = authService.getUser();
         const token = authService.getToken();
-        
+
         if (savedUser && token) {
-          setUser(savedUser);
+          try {
+            const profile = await profileService.getProfile();
+            setUser({
+              id: profile.id,
+              email: profile.email,
+              role: profile.role,
+            });
+            if (typeof window !== 'undefined') {
+              localStorage.setItem(
+                'user',
+                JSON.stringify({
+                  id: profile.id,
+                  email: profile.email,
+                  role: profile.role,
+                }),
+              );
+            }
+          } catch {
+            setUser(savedUser);
+          }
         } else {
           setUser(null);
         }
@@ -60,9 +81,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   // Обновить информацию о пользователе
-  const refreshUser = () => {
-    const savedUser = authService.getUser();
-    setUser(savedUser);
+  const refreshUser = async () => {
+    const token = authService.getToken();
+    if (!token) {
+      setUser(null);
+      return;
+    }
+    try {
+      const profile = await profileService.getProfile();
+      const userData = {
+        id: profile.id,
+        email: profile.email,
+        role: profile.role,
+      };
+      setUser(userData);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('user', JSON.stringify(userData));
+      }
+    } catch {
+      const savedUser = authService.getUser();
+      setUser(savedUser);
+    }
   };
 
   // Вход в систему

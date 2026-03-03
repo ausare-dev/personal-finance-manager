@@ -155,43 +155,44 @@ export default function EducationPage() {
                 Найдено статей: {filteredArticles.length}
               </Text>
               <div className="education-articles-grid">
-                <Row gutter={[16, 16]}>
+                <Row gutter={[16, 16]} style={{ alignItems: 'stretch' }}>
                   {filteredArticles.map((article) => (
-                    <Col xs={24} sm={12} lg={8} key={article.id}>
+                    <Col xs={24} sm={12} lg={8} key={article.id} style={{ display: 'flex' }}>
                       <Card
-                      hoverable
-                      style={{ height: '100%' }}
-                      onClick={() => handleArticleClick(article.id)}
-                      actions={[
-                        <Space key="read">
-                          <ReadOutlined />
-                          <span>Читать</span>
-                        </Space>,
-                      ]}
-                    >
-                      <Space orientation="vertical" style={{ width: '100%' }} size="small">
-                        <Tag color="blue">{article.category}</Tag>
-                        <Title level={4} style={{ margin: 0 }}>
-                          {article.title}
-                        </Title>
-                        <Paragraph
-                          ellipsis={{ rows: 3, expandable: false }}
-                          style={{ margin: 0, color: '#666' }}
-                        >
-                          {article.content}
-                        </Paragraph>
-                        <Space separator={<span>•</span>}>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            <EyeOutlined /> {article.readCount}
-                          </Text>
-                          <Text type="secondary" style={{ fontSize: '12px' }}>
-                            {formatDate(article.createdAt)}
-                          </Text>
+                        hoverable
+                        style={{ height: '100%', width: '100%', display: 'flex', flexDirection: 'column' }}
+                        styles={{ body: { flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 } }}
+                        onClick={() => handleArticleClick(article.id)}
+                        actions={[
+                          <Space key="read">
+                            <ReadOutlined />
+                            <span>Читать</span>
+                          </Space>,
+                        ]}
+                      >
+                        <Space orientation="vertical" style={{ width: '100%', flex: 1, minHeight: 0 }} size="small">
+                          <Tag color="blue">{article.category}</Tag>
+                          <Title level={4} style={{ margin: 0 }}>
+                            {article.title}
+                          </Title>
+                          <Paragraph
+                            ellipsis={{ rows: 3, expandable: false }}
+                            style={{ margin: 0, color: '#666', flex: 1, minHeight: 0 }}
+                          >
+                            {article.summary || article.content}
+                          </Paragraph>
+                          <Space separator={<span>•</span>}>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                              <EyeOutlined /> {article.readCount}
+                            </Text>
+                            <Text type="secondary" style={{ fontSize: '12px' }}>
+                              {formatDate(article.createdAt)}
+                            </Text>
+                          </Space>
                         </Space>
-                      </Space>
-                    </Card>
-                  </Col>
-                ))}
+                      </Card>
+                    </Col>
+                  ))}
                 </Row>
               </div>
             </>

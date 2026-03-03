@@ -59,7 +59,7 @@ export const authService = {
   /**
    * Получить сохраненного пользователя
    */
-  getUser(): { id: string; email: string } | null {
+  getUser(): { id: string; email: string; role?: string } | null {
     if (typeof window !== 'undefined') {
       const userStr = localStorage.getItem('user');
       if (userStr) {
