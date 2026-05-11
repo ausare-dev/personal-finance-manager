@@ -157,6 +157,12 @@ export default function LoginPage() {
             </Button>
           </Form.Item>
 
+          <div style={{ textAlign: 'right', marginBottom: 16 }}>
+            <Link href="/forgot-password" style={{ color: '#1890ff', fontSize: 14 }}>
+              Забыли пароль?
+            </Link>
+          </div>
+
           <div style={{ textAlign: 'center', marginBottom: 16 }}>
             <Text type="secondary">
               Нет аккаунта?{' '}

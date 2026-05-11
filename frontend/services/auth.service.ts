@@ -4,6 +4,8 @@ import type {
   LoginRequest,
   RegisterRequest,
   AuthResponse,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
 } from '../types';
 
 export const authService = {
@@ -44,6 +46,22 @@ export const authService = {
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
     }
+  },
+
+  async forgotPassword(data: ForgotPasswordRequest): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+      data,
+    );
+    return response.data;
+  },
+
+  async resetPassword(data: ResetPasswordRequest): Promise<{ message: string }> {
+    const response = await api.post<{ message: string }>(
+      API_ENDPOINTS.AUTH.RESET_PASSWORD,
+      data,
+    );
+    return response.data;
   },
 
   /**

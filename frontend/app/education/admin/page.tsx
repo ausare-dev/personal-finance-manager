@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MainLayout from '@/components/MainLayout';
@@ -40,17 +40,7 @@ export default function EducationAdminPage() {
   const [submitLoading, setSubmitLoading] = useState(false);
   const [form] = Form.useForm();
 
-  useEffect(() => {
-    if (user && user.role !== 'admin') {
-      router.replace('/dashboard');
-      return;
-    }
-    if (user?.role === 'admin') {
-      loadData();
-    }
-  }, [user, router]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       const [articlesData, categoriesData] = await Promise.all([
@@ -64,7 +54,17 @@ export default function EducationAdminPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [message]);
+
+  useEffect(() => {
+    if (user && user.role !== 'admin') {
+      router.replace('/dashboard');
+      return;
+    }
+    if (user?.role === 'admin') {
+      void loadData();
+    }
+  }, [user, router, loadData]);
 
   const formatDate = (date: string) => {
     return format(new Date(date), 'dd.MM.yyyy', { locale: ru });
