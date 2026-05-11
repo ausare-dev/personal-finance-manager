@@ -106,13 +106,15 @@ export class GoalsService {
       }
     }
 
-    // Validate currentAmount
-    const targetAmount = updateGoalDto.targetAmount
-      ? parseFloat(updateGoalDto.targetAmount.toString())
-      : parseFloat(goal.targetAmount.toString());
-    const currentAmount = updateGoalDto.currentAmount
-      ? parseFloat(updateGoalDto.currentAmount.toString())
-      : parseFloat(goal.currentAmount.toString());
+    // Validate currentAmount (0 — валидное значение; не использовать truthy-проверку)
+    const targetAmount =
+      updateGoalDto.targetAmount != null
+        ? parseFloat(updateGoalDto.targetAmount.toString())
+        : parseFloat(goal.targetAmount.toString());
+    const currentAmount =
+      updateGoalDto.currentAmount != null
+        ? parseFloat(updateGoalDto.currentAmount.toString())
+        : parseFloat(goal.currentAmount.toString());
 
     if (currentAmount > targetAmount) {
       throw new BadRequestException(

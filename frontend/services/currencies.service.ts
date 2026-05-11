@@ -8,12 +8,17 @@ export interface ConvertCurrencyParams {
   to: string;
 }
 
+/** Успешный ответ GET /currencies/convert (совпадает с backend) */
 export interface ConvertCurrencyResponse {
-  amount: string;
   from: string;
   to: string;
-  rate: string;
-  result: string;
+  amount: number;
+  converted: number;
+}
+
+/** Ответ при ошибке (тот же эндпоинт, HTTP 200) */
+export interface ConvertCurrencyErrorResponse {
+  error: string;
 }
 
 export const currenciesService = {
@@ -53,13 +58,14 @@ export const currenciesService = {
   /**
    * Конвертировать валюту
    */
-  async convert(params: ConvertCurrencyParams): Promise<ConvertCurrencyResponse> {
-    const response = await api.get<ConvertCurrencyResponse>(
-      API_ENDPOINTS.CURRENCIES.CONVERT,
-      {
-        params,
-      }
-    );
+  async convert(
+    params: ConvertCurrencyParams,
+  ): Promise<ConvertCurrencyResponse | ConvertCurrencyErrorResponse> {
+    const response = await api.get<
+      ConvertCurrencyResponse | ConvertCurrencyErrorResponse
+    >(API_ENDPOINTS.CURRENCIES.CONVERT, {
+      params,
+    });
     return response.data;
   },
 

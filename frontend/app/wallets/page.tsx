@@ -1,5 +1,6 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import { useEffect, useState, useCallback } from 'react';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import MainLayout from '@/components/MainLayout';
@@ -34,7 +35,7 @@ import { walletsService } from '@/services/wallets.service';
 import { currenciesService } from '@/services/currencies.service';
 import type { Wallet, CreateWalletDto } from '@/types';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 const walletSchema = yup.object({
@@ -43,6 +44,9 @@ const walletSchema = yup.object({
 });
 
 const CURRENCIES = ['RUB', 'USD', 'EUR', 'GBP', 'JPY', 'CNY', 'KZT', 'BYN'];
+
+/** Маркер: конвертация в базовую валюту не удалась (нельзя показывать оригинал как базовую) */
+const CONVERT_FAIL = '__CONVERT_FAIL__';
 
 const formatAmount = (amount: string | number, currency: string = 'RUB') => {
   const num = typeof amount === 'string' ? parseFloat(amount) : amount;
@@ -99,9 +103,13 @@ export default function WalletsPage() {
             from: wallet.currency,
             to: baseCurrency,
           });
-          conversions[wallet.id] = result.result;
+          if ('error' in result) {
+            conversions[wallet.id] = CONVERT_FAIL;
+          } else {
+            conversions[wallet.id] = String(result.converted);
+          }
         } catch {
-          conversions[wallet.id] = wallet.balance;
+          conversions[wallet.id] = CONVERT_FAIL;
         }
       }
     }
@@ -161,9 +169,37 @@ export default function WalletsPage() {
     }
   };
 
+  const renderBalanceInBase = (wallet: Wallet): ReactNode => {
+    if (wallet.currency === baseCurrency) {
+      return (
+        <span style={{ color: balanceColor(wallet.balance), fontWeight: 600 }}>
+          {formatAmount(wallet.balance, baseCurrency)}
+        </span>
+      );
+    }
+    const v = convertedBalances[wallet.id];
+    if (v === CONVERT_FAIL) {
+      return <Text type="secondary">нет курса</Text>;
+    }
+    if (v === undefined) {
+      return <Spin size="small" />;
+    }
+    return (
+      <span style={{ color: balanceColor(v), fontWeight: 600 }}>
+        {formatAmount(parseFloat(v), baseCurrency)}
+      </span>
+    );
+  };
+
   const totalBalance = wallets.reduce((sum, wallet) => {
-    const converted = convertedBalances[wallet.id] || wallet.balance;
-    return sum + parseFloat(converted);
+    if (wallet.currency === baseCurrency) {
+      return sum + parseFloat(wallet.balance);
+    }
+    const v = convertedBalances[wallet.id];
+    if (v === undefined || v === CONVERT_FAIL) {
+      return sum;
+    }
+    return sum + parseFloat(v);
   }, 0);
 
   const balanceColor = (value: string) =>
@@ -238,8 +274,6 @@ export default function WalletsPage() {
               <>
                 <div className="wallets-mobile-list">
                   {wallets.map((wallet) => {
-                    const converted =
-                      convertedBalances[wallet.id] ?? wallet.balance;
                     return (
                       <div
                         key={wallet.id}
@@ -283,7 +317,7 @@ export default function WalletsPage() {
                                   color: 'var(--ant-color-text-secondary)',
                                 }}
                               >
-                                {formatAmount(converted, baseCurrency)}
+                                {renderBalanceInBase(wallet)}
                               </div>
                             )}
                           </div>
@@ -392,8 +426,6 @@ export default function WalletsPage() {
                       </thead>
                       <tbody>
                         {wallets.map((wallet) => {
-                          const converted =
-                            convertedBalances[wallet.id] ?? wallet.balance;
                           return (
                             <tr
                               key={wallet.id}
@@ -422,11 +454,9 @@ export default function WalletsPage() {
                                 style={{
                                   padding: '12px 16px',
                                   textAlign: 'right',
-                                  color: balanceColor(converted),
-                                  fontWeight: 600,
                                 }}
                               >
-                                {formatAmount(converted, baseCurrency)}
+                                {renderBalanceInBase(wallet)}
                               </td>
                               <td
                                 style={{

@@ -107,6 +107,7 @@ export default function TransactionsPage() {
 		watch,
 	} = useForm<CreateTransactionDto>({
 		resolver: yupResolver(transactionSchema) as unknown as Resolver<CreateTransactionDto>,
+		shouldFocusError: true,
 	});
 
 	const walletId = watch('walletId');
@@ -229,7 +230,11 @@ export default function TransactionsPage() {
 
 	const handleCreate = () => {
 		setEditingTransaction(null);
-		reset();
+		reset({
+			type: 'expense',
+			tags: [],
+			description: '',
+		});
 		setModalVisible(true);
 	};
 
@@ -743,15 +748,27 @@ export default function TransactionsPage() {
 					footer={null}
 					width={600}
 				>
-					<form onSubmit={handleSubmit(onSubmit)}>
+					<form
+						onSubmit={handleSubmit(onSubmit, () => {
+							message.warning(
+								'Заполните обязательные поля — они подсвечены красным.',
+							);
+						})}
+					>
 						<Form.Item
 							label='Тип'
+							required
 							validateStatus={errors.type ? 'error' : ''}
 							help={errors.type?.message}
 						>
 							<Radio.Group
 								value={watch('type')}
-								onChange={e => setValue('type', e.target.value)}
+								onChange={e =>
+									setValue('type', e.target.value, {
+										shouldValidate: true,
+										shouldDirty: true,
+									})
+								}
 							>
 								<Radio value='income'>Доход</Radio>
 								<Radio value='expense'>Расход</Radio>
@@ -760,13 +777,20 @@ export default function TransactionsPage() {
 
 						<Form.Item
 							label='Кошелек'
+							required
 							validateStatus={errors.walletId ? 'error' : ''}
 							help={errors.walletId?.message}
 						>
 							<Select
 								placeholder='Выберите кошелек'
+								status={errors.walletId ? 'error' : undefined}
 								value={walletId}
-								onChange={value => setValue('walletId', value)}
+								onChange={value =>
+									setValue('walletId', value, {
+										shouldValidate: true,
+										shouldDirty: true,
+									})
+								}
 								style={{ width: '100%' }}
 							>
 								{wallets.map(wallet => (
@@ -779,6 +803,7 @@ export default function TransactionsPage() {
 
 						<Form.Item
 							label='Сумма'
+							required
 							validateStatus={errors.amount ? 'error' : ''}
 							help={errors.amount?.message}
 						>
@@ -787,20 +812,36 @@ export default function TransactionsPage() {
 								style={{ width: '100%' }}
 								min={0}
 								step={0.01}
+								status={errors.amount ? 'error' : undefined}
 								value={watch('amount')}
-								onChange={value => setValue('amount', value || 0)}
+								onChange={value =>
+									setValue(
+										'amount',
+										value === null || value === undefined
+											? (undefined as unknown as number)
+											: value,
+										{ shouldValidate: true, shouldDirty: true },
+									)
+								}
 							/>
 						</Form.Item>
 
 						<Form.Item
 							label='Категория'
+							required
 							validateStatus={errors.category ? 'error' : ''}
 							help={errors.category?.message}
 						>
 							<Select
 								placeholder='Выберите категорию'
+								status={errors.category ? 'error' : undefined}
 								value={watch('category')}
-								onChange={value => setValue('category', value)}
+								onChange={value =>
+									setValue('category', value, {
+										shouldValidate: true,
+										shouldDirty: true,
+									})
+								}
 								style={{ width: '100%' }}
 								showSearch
 							>
@@ -821,13 +862,22 @@ export default function TransactionsPage() {
 							/>
 						</Form.Item>
 
-						<Form.Item label='Дата'>
+						<Form.Item
+							label='Дата'
+							required
+							validateStatus={errors.date ? 'error' : ''}
+							help={errors.date?.message}
+						>
 							<DatePicker
 								style={{ width: '100%' }}
 								showTime
+								status={errors.date ? 'error' : undefined}
 								value={watch('date') ? dayjs(watch('date')) : null}
 								onChange={date =>
-									setValue('date', date ? date.toISOString() : '')
+									setValue('date', date ? date.toISOString() : '', {
+										shouldValidate: true,
+										shouldDirty: true,
+									})
 								}
 							/>
 						</Form.Item>

@@ -5,11 +5,14 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import Decimal from 'decimal.js';
 import { Budget, BudgetPeriod } from '../entities/budget.entity';
+import { Wallet } from '../entities/wallet.entity';
 import { TransactionsService } from '../transactions/transactions.service';
 import { TransactionType } from '../entities/transaction.entity';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { UpdateBudgetDto } from './dto/update-budget.dto';
+import { CurrenciesService } from '../currencies/currencies.service';
 
 export interface BudgetWithUsage extends Budget {
   used: number;
@@ -22,8 +25,27 @@ export class BudgetsService {
   constructor(
     @InjectRepository(Budget)
     private budgetRepository: Repository<Budget>,
+    @InjectRepository(Wallet)
+    private walletRepository: Repository<Wallet>,
     private transactionsService: TransactionsService,
+    private currenciesService: CurrenciesService,
   ) {}
+
+  private async toRub(amount: Decimal, currency: string): Promise<Decimal> {
+    const code = (currency || 'RUB').toUpperCase();
+    if (code === 'RUB') {
+      return amount;
+    }
+    const converted = await this.currenciesService.convert(
+      amount.toNumber(),
+      code,
+      'RUB',
+    );
+    if (converted === null) {
+      return new Decimal(0);
+    }
+    return new Decimal(converted);
+  }
 
   async findAll(userId: string): Promise<BudgetWithUsage[]> {
     const budgets = await this.budgetRepository.find({
@@ -103,14 +125,25 @@ export class BudgetsService {
       },
     );
 
-    // Calculate total used amount
-    const used = transactions.reduce((sum, transaction) => {
-      const amount =
+    const wallets = await this.walletRepository.find({ where: { userId } });
+    const walletCurrencyById = new Map(
+      wallets.map((w) => [w.id, (w.currency || 'RUB').toUpperCase()]),
+    );
+
+    let usedDecimal = new Decimal(0);
+    for (const transaction of transactions) {
+      const currency = walletCurrencyById.get(transaction.walletId);
+      if (!currency) {
+        continue;
+      }
+      const raw =
         typeof transaction.amount === 'string'
           ? parseFloat(transaction.amount)
           : transaction.amount;
-      return sum + amount;
-    }, 0);
+      const amountRub = await this.toRub(new Decimal(raw), currency);
+      usedDecimal = usedDecimal.plus(amountRub);
+    }
+    const used = usedDecimal.toNumber();
 
     const remaining = Math.max(0, numericLimit - used);
     const usagePercentage = numericLimit > 0 ? (used / numericLimit) * 100 : 0;

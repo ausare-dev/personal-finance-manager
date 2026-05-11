@@ -4,7 +4,7 @@ import { Repository } from 'typeorm';
 import Decimal from 'decimal.js';
 import { Transaction, TransactionType } from '../entities/transaction.entity';
 import { Wallet } from '../entities/wallet.entity';
-import { TransactionsService } from '../transactions/transactions.service';
+import { CurrenciesService } from '../currencies/currencies.service';
 
 export interface OverviewStats {
   totalIncome: number;
@@ -57,8 +57,33 @@ export class AnalyticsService {
     private transactionRepository: Repository<Transaction>,
     @InjectRepository(Wallet)
     private walletRepository: Repository<Wallet>,
-    private transactionsService: TransactionsService,
+    private currenciesService: CurrenciesService,
   ) {}
+
+  /** Сумма в рублях для отображения сводной аналитики */
+  private async toRub(amount: Decimal, currency: string): Promise<Decimal> {
+    const code = (currency || 'RUB').toUpperCase();
+    if (code === 'RUB') {
+      return amount;
+    }
+    const converted = await this.currenciesService.convert(
+      amount.toNumber(),
+      code,
+      'RUB',
+    );
+    // Нельзя подставлять исходную сумму как рубли — при отсутствии курса не учитываем
+    if (converted === null) {
+      return new Decimal(0);
+    }
+    return new Decimal(converted);
+  }
+
+  private async getWalletCurrencyMap(
+    userId: string,
+  ): Promise<Map<string, string>> {
+    const ws = await this.walletRepository.find({ where: { userId } });
+    return new Map(ws.map((w) => [w.id, (w.currency || 'RUB').toUpperCase()]));
+  }
 
   /**
    * Получить общую статистику пользователя
@@ -74,26 +99,39 @@ export class AnalyticsService {
       where: { userId },
     });
 
-    // Рассчитать суммы
+    const walletCurrencyById = new Map(
+      wallets.map((w) => [w.id, (w.currency || 'RUB').toUpperCase()]),
+    );
+
+    // Рассчитать суммы в RUB (по валюте кошелька транзакции)
     let totalIncome = new Decimal(0);
     let totalExpense = new Decimal(0);
     let incomeCount = 0;
     let expenseCount = 0;
 
     for (const transaction of allTransactions) {
+      const currency = walletCurrencyById.get(transaction.walletId);
+      if (!currency) {
+        continue;
+      }
       const amount = new Decimal(transaction.amount.toString());
+      const amountRub = await this.toRub(amount, currency);
       if (transaction.type === TransactionType.INCOME) {
-        totalIncome = totalIncome.plus(amount);
+        totalIncome = totalIncome.plus(amountRub);
         incomeCount++;
       } else {
-        totalExpense = totalExpense.plus(amount);
+        totalExpense = totalExpense.plus(amountRub);
         expenseCount++;
       }
     }
 
-    const totalBalance = wallets.reduce((sum, wallet) => {
-      return sum.plus(new Decimal(wallet.balance.toString()));
-    }, new Decimal(0));
+    let totalBalance = new Decimal(0);
+    for (const wallet of wallets) {
+      const bal = new Decimal(wallet.balance.toString());
+      totalBalance = totalBalance.plus(
+        await this.toRub(bal, wallet.currency || 'RUB'),
+      );
+    }
 
     const netAmount = totalIncome.minus(totalExpense);
 
@@ -137,43 +175,52 @@ export class AnalyticsService {
       .orderBy('transaction.date', 'ASC')
       .getMany();
 
-    // Группировка по периодам
+    const walletCurrencyById = await this.getWalletCurrencyMap(userId);
+
+    // Группировка по периодам (суммы в RUB)
     const periodMap = new Map<string, { income: Decimal; expense: Decimal }>();
 
     for (const transaction of transactions) {
       const date = new Date(transaction.date);
+      const currency = walletCurrencyById.get(transaction.walletId);
+      if (!currency) {
+        continue;
+      }
+
       let periodKey: string;
 
       if (groupBy === 'day') {
         periodKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
       } else if (groupBy === 'week') {
         const weekStart = new Date(date);
-        weekStart.setDate(date.getDate() - date.getDay()); // Начало недели (воскресенье)
+        const dayOfWeek = date.getDay() || 7; // 0 = Sunday -> 7 (как в getTrends)
+        weekStart.setDate(date.getDate() - dayOfWeek + 1);
         periodKey = weekStart.toISOString().split('T')[0];
       } else {
-        // month
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        periodKey = `${date.getFullYear()}-${month}`;
+        periodKey = date.toISOString().substring(0, 7); // YYYY-MM (как в getTrends)
       }
 
       const existing = periodMap.get(periodKey);
-      const amount = new Decimal(transaction.amount.toString());
+      const amountRub = await this.toRub(
+        new Decimal(transaction.amount.toString()),
+        currency,
+      );
 
       if (existing) {
         if (transaction.type === TransactionType.INCOME) {
-          existing.income = existing.income.plus(amount);
+          existing.income = existing.income.plus(amountRub);
         } else {
-          existing.expense = existing.expense.plus(amount);
+          existing.expense = existing.expense.plus(amountRub);
         }
       } else {
         periodMap.set(periodKey, {
           income:
             transaction.type === TransactionType.INCOME
-              ? amount
+              ? amountRub
               : new Decimal(0),
           expense:
             transaction.type === TransactionType.EXPENSE
-              ? amount
+              ? amountRub
               : new Decimal(0),
         });
       }
@@ -229,22 +276,31 @@ export class AnalyticsService {
 
     const transactions = await queryBuilder.getMany();
 
-    // Группировка по категориям
+    const walletCurrencyById = await this.getWalletCurrencyMap(userId);
+
+    // Группировка по категориям (суммы в RUB)
     const categoryMap = new Map<
       string,
       { amount: Decimal; count: number; type: TransactionType }
     >();
 
     for (const transaction of transactions) {
-      const amount = new Decimal(transaction.amount.toString());
+      const currency = walletCurrencyById.get(transaction.walletId);
+      if (!currency) {
+        continue;
+      }
+      const amountRub = await this.toRub(
+        new Decimal(transaction.amount.toString()),
+        currency,
+      );
       const existing = categoryMap.get(transaction.category);
 
       if (existing) {
-        existing.amount = existing.amount.plus(amount);
+        existing.amount = existing.amount.plus(amountRub);
         existing.count++;
       } else {
         categoryMap.set(transaction.category, {
-          amount,
+          amount: amountRub,
           count: 1,
           type: transaction.type,
         });
@@ -301,10 +357,17 @@ export class AnalyticsService {
       .orderBy('transaction.date', 'ASC')
       .getMany();
 
-    // Группировка по датам
+    const walletCurrencyById = await this.getWalletCurrencyMap(userId);
+
+    // Группировка по датам (суммы в RUB)
     const dateMap = new Map<string, { income: Decimal; expense: Decimal }>();
 
     for (const transaction of transactions) {
+      const currency = walletCurrencyById.get(transaction.walletId);
+      if (!currency) {
+        continue;
+      }
+
       let dateKey: string;
       const date = new Date(transaction.date);
 
@@ -323,24 +386,27 @@ export class AnalyticsService {
           dateKey = date.toISOString().split('T')[0]; // YYYY-MM-DD
       }
 
-      const amount = new Decimal(transaction.amount.toString());
+      const amountRub = await this.toRub(
+        new Decimal(transaction.amount.toString()),
+        currency,
+      );
       const existing = dateMap.get(dateKey);
 
       if (existing) {
         if (transaction.type === TransactionType.INCOME) {
-          existing.income = existing.income.plus(amount);
+          existing.income = existing.income.plus(amountRub);
         } else {
-          existing.expense = existing.expense.plus(amount);
+          existing.expense = existing.expense.plus(amountRub);
         }
       } else {
         dateMap.set(dateKey, {
           income:
             transaction.type === TransactionType.INCOME
-              ? amount
+              ? amountRub
               : new Decimal(0),
           expense:
             transaction.type === TransactionType.EXPENSE
-              ? amount
+              ? amountRub
               : new Decimal(0),
         });
       }

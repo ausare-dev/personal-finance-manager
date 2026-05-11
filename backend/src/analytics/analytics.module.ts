@@ -4,12 +4,12 @@ import { Transaction } from '../entities/transaction.entity';
 import { Wallet } from '../entities/wallet.entity';
 import { AnalyticsService } from './analytics.service';
 import { AnalyticsController } from './analytics.controller';
-import { TransactionsModule } from '../transactions/transactions.module';
+import { CurrenciesModule } from '../currencies/currencies.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Transaction, Wallet]),
-    TransactionsModule,
+    CurrenciesModule,
   ],
   controllers: [AnalyticsController],
   providers: [AnalyticsService],

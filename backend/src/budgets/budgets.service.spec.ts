@@ -2,7 +2,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { BudgetsService } from './budgets.service';
 import { Budget, BudgetPeriod } from '../entities/budget.entity';
+import { Wallet } from '../entities/wallet.entity';
 import { TransactionsService } from '../transactions/transactions.service';
+import { CurrenciesService } from '../currencies/currencies.service';
 import { CreateBudgetDto } from './dto/create-budget.dto';
 import { NotFoundException, ForbiddenException } from '@nestjs/common';
 
@@ -21,6 +23,14 @@ describe('BudgetsService', () => {
     findAll: jest.fn(),
   };
 
+  const mockWalletRepository = {
+    find: jest.fn().mockResolvedValue([]),
+  };
+
+  const mockCurrenciesService = {
+    convert: jest.fn().mockImplementation(async (amount: number) => amount),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -30,8 +40,16 @@ describe('BudgetsService', () => {
           useValue: mockRepository,
         },
         {
+          provide: getRepositoryToken(Wallet),
+          useValue: mockWalletRepository,
+        },
+        {
           provide: TransactionsService,
           useValue: mockTransactionsService,
+        },
+        {
+          provide: CurrenciesService,
+          useValue: mockCurrenciesService,
         },
       ],
     }).compile();

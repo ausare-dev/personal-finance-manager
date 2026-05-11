@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { AnalyticsService } from './analytics.service';
 import { Transaction, TransactionType } from '../entities/transaction.entity';
 import { Wallet } from '../entities/wallet.entity';
-import { TransactionsService } from '../transactions/transactions.service';
+import { CurrenciesService } from '../currencies/currencies.service';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -24,7 +24,21 @@ describe('AnalyticsService', () => {
     getMany: jest.fn(),
   };
 
-  const mockTransactionsService = {};
+  const mockCurrenciesService = {
+    convert: jest
+      .fn()
+      .mockImplementation(
+        async (amount: number, from: string, to: string) => {
+          if (to === 'RUB' && from === 'RUB') {
+            return amount;
+          }
+          if (to === 'RUB' && from === 'USD') {
+            return amount * 90;
+          }
+          return amount;
+        },
+      ),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -39,8 +53,8 @@ describe('AnalyticsService', () => {
           useValue: mockWalletRepository,
         },
         {
-          provide: TransactionsService,
-          useValue: mockTransactionsService,
+          provide: CurrenciesService,
+          useValue: mockCurrenciesService,
         },
       ],
     }).compile();
@@ -63,10 +77,20 @@ describe('AnalyticsService', () => {
     it('should return overview stats', async () => {
       const userId = 'user-123';
       const transactions: Partial<Transaction>[] = [
-        { type: TransactionType.INCOME, amount: 5000 },
-        { type: TransactionType.EXPENSE, amount: 2000 },
+        {
+          type: TransactionType.INCOME,
+          amount: 5000,
+          walletId: 'w1',
+        },
+        {
+          type: TransactionType.EXPENSE,
+          amount: 2000,
+          walletId: 'w1',
+        },
       ];
-      const wallets: Partial<Wallet>[] = [{ balance: 3000 }];
+      const wallets: Partial<Wallet>[] = [
+        { id: 'w1', balance: 3000, currency: 'RUB' },
+      ];
 
       mockTransactionRepository.find.mockResolvedValue(transactions);
       mockWalletRepository.find.mockResolvedValue(wallets);
@@ -100,11 +124,13 @@ describe('AnalyticsService', () => {
           type: TransactionType.INCOME,
           amount: 1000,
           date: new Date('2024-01-15'),
+          walletId: 'w1',
         },
         {
           type: TransactionType.EXPENSE,
           amount: 300,
           date: new Date('2024-01-15'),
+          walletId: 'w1',
         },
       ];
 
@@ -112,6 +138,9 @@ describe('AnalyticsService', () => {
         mockQueryBuilder,
       );
       mockQueryBuilder.getMany.mockResolvedValue(transactions);
+      mockWalletRepository.find.mockResolvedValue([
+        { id: 'w1', currency: 'RUB' },
+      ]);
 
       const result = await service.getIncomeExpense(userId, start, end, 'day');
 
@@ -128,15 +157,33 @@ describe('AnalyticsService', () => {
     it('should return category stats', async () => {
       const userId = 'user-123';
       const transactions: Partial<Transaction>[] = [
-        { category: 'Food', type: TransactionType.EXPENSE, amount: 500 },
-        { category: 'Food', type: TransactionType.EXPENSE, amount: 300 },
-        { category: 'Transport', type: TransactionType.EXPENSE, amount: 200 },
+        {
+          category: 'Food',
+          type: TransactionType.EXPENSE,
+          amount: 500,
+          walletId: 'w1',
+        },
+        {
+          category: 'Food',
+          type: TransactionType.EXPENSE,
+          amount: 300,
+          walletId: 'w1',
+        },
+        {
+          category: 'Transport',
+          type: TransactionType.EXPENSE,
+          amount: 200,
+          walletId: 'w1',
+        },
       ];
 
       mockTransactionRepository.createQueryBuilder.mockReturnValue(
         mockQueryBuilder,
       );
       mockQueryBuilder.getMany.mockResolvedValue(transactions);
+      mockWalletRepository.find.mockResolvedValue([
+        { id: 'w1', currency: 'RUB' },
+      ]);
 
       const result = await service.getByCategory(userId);
 
@@ -160,11 +207,13 @@ describe('AnalyticsService', () => {
           type: TransactionType.INCOME,
           amount: 1000,
           date: new Date('2024-01-10'),
+          walletId: 'w1',
         },
         {
           type: TransactionType.EXPENSE,
           amount: 400,
           date: new Date('2024-01-10'),
+          walletId: 'w1',
         },
       ];
 
@@ -172,6 +221,9 @@ describe('AnalyticsService', () => {
         mockQueryBuilder,
       );
       mockQueryBuilder.getMany.mockResolvedValue(transactions);
+      mockWalletRepository.find.mockResolvedValue([
+        { id: 'w1', currency: 'RUB' },
+      ]);
 
       const result = await service.getTrends(userId, start, end, 'day');
 
