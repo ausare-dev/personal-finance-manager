@@ -245,7 +245,3 @@ npm run build        # Сборка для production
 npm run start        # Запуск production сборки
 npm run lint         # Проверка кода
 ```
-
-## Лицензия
-
-[Укажите лицензию проекта]
